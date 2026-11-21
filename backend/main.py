@@ -35,7 +35,12 @@ def health():
 
 
 @app.get("/courses")
-def get_courses():
+def get_courses(term: str | None = None):
+    if term is not None:
+        if term != "202701":
+            raise HTTPException(404, "No published schedule snapshot for this term")
+        return json.loads((BASE_DIR.parent / "public" / "usf-sections.json").read_text(encoding="utf-8"))
+
     file_path = BASE_DIR / "courses.json"
 
     try:

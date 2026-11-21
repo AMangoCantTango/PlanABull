@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readRequirements, auditOptions } from "./audit";
+import { readRequirements, auditOptions, requiredAuditCourse } from "./audit";
 
 describe("DegreeWorks audit", () => {
   it("keeps requirements including choices and non-course conditions, excluding nearby transcript rows", () => {
@@ -36,4 +36,10 @@ describe("DegreeWorks audit", () => {
     expect(auditOptions("3 Credits in COP 3000-4999")).toEqual([]);
     expect(auditOptions("6 Credits in COP 4@ except COP 4530")).toEqual([]);
   });
+});
+
+it("only prepares unambiguous named audit courses", () => {
+  expect(requiredAuditCourse("1 Class in CHM 2045L")).toBe("CHM 2045L");
+  expect(requiredAuditCourse("COP 4530 or COP 4600")).toBeUndefined();
+  expect(requiredAuditCourse("6 Credits in COP 4@ except COP 4530")).toBeUndefined();
 });

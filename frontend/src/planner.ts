@@ -26,11 +26,12 @@ export interface Section {
   start: number;
   end: number;
   seat: Seat;
-  rmp: number;
-  difficulty: number;
-  again: number;
-  reviews: number;
-  coursicle: number;
+  profileUrl?: string;
+  rmp?: number;
+  difficulty?: number;
+  again?: number;
+  reviews?: number;
+  coursicle?: number;
   sample: boolean;
 }
 export interface Offering {

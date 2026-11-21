@@ -58,3 +58,9 @@ export function auditOptions(requirement: string) {
   );
   return parseCatalog(expanded);
 }
+
+// Only an unconditional single-course row can be acted on without a choice.
+export function requiredAuditCourse(text: string): string | undefined {
+  const match = /^(?:(?:1 (?:class|course)|\d+ credits?) in )?([A-Z]{3})\s*(\d{4}[CL]?)[.]?$/i.exec(text.trim());
+  return match ? (match[1] + " " + match[2]).toUpperCase() : undefined;
+}

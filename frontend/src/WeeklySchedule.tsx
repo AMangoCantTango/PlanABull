@@ -117,7 +117,7 @@ export function WeeklySchedule({
                         <span>{s.professor}</span>
                         <small>
                           #{s.crn} <Star size={9} />
-                          {s.rmp.toFixed(1)}
+                          {s.rmp?.toFixed(1) ?? "Unrated"}
                         </small>
                       </button>
                     ))}

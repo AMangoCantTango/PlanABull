@@ -10,9 +10,9 @@ To refresh the snapshot, run `node scripts/refresh-catalog.mjs` with Poppler's p
 
 ## Sections and registration
 
-The default Spring 2027 workspace uses simulated sections, ratings, seats, and CRNs. The optimizer maximizes the number of planned courses, then scores schedules according to the selected preset. Pins are hard constraints. The cart copies CRNs and opens MyUSF for the student to complete enrollment. The registration checklist is manual.
+Spring 2027 uses a dated snapshot from the [USF Staff Schedule Search](https://usfweb.usf.edu/DSS/StaffScheduleSearch). Refresh it from the repository root with `python frontend/scripts/refresh-sections.py`. It includes active sections with a single schedulable weekday meeting pattern in subjects represented in the catalog. Confirm current seats in MyUSF before registration.
 
-To supply actual section data, configure VITE_API_URL in .env.local and serve GET /courses?term=202701 with CORS enabled for the frontend origin. The response is an object with term set to "202701" and a sections array. Each section uses the Section fields defined in planner.ts, excluding sample. Use weekdays numbered 0–4, empty days for asynchronous classes, and integer minutes from midnight for start and end. CRNs must be unique five-digit strings. The provider supplies RMP and Coursicle metrics and seat availability. An empty valid array means no sections are available. When the feed is unavailable, the UI labels the sample fallback. Imported courses use simulated sections.
+The default app reads the bundled snapshot. Configuring VITE_API_URL loads the section feed from GET /courses?term=202701 instead. Verified Rate My Professors profile snapshots are matched by instructor and course in SectionFeed.ts. Other instructors remain unrated.
 
 Plans are stored by major on the current browser under planabull_state_v1. A previously saved list under planabull-plan is imported on first use.
 

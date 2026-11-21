@@ -8,7 +8,7 @@ export function conflicts(a: Section, b: Section) {
   );
 }
 function quality(s: Section, preset: Preset) {
-  const rating = s.rmp + s.coursicle + s.again / 100;
+  const rating = (s.rmp ?? 0) + (s.coursicle ?? 0) + (s.again ?? 0) / 100;
   if (preset === "Highest Professor Rating") return rating * 10;
   const early = s.days.length && s.start < 600;
   return rating - (early ? (preset === "No Early Mornings" ? 100 : 1) : 0);

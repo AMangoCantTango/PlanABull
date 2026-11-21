@@ -1,0 +1,355 @@
+[
+  {
+    "roster": "A. Fox",
+    "subjects": [
+      "BSC"
+    ],
+    "professor": "Ashley  Fox",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/3136149",
+    "rmp": 1.5,
+    "reviews": 2,
+    "again": 0,
+    "difficulty": 4
+  },
+  {
+    "roster": "A. Gaspar",
+    "subjects": [
+      "COP"
+    ],
+    "professor": "Alessio Gaspar",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/1605893",
+    "rmp": 3.4,
+    "reviews": 57,
+    "again": 65,
+    "difficulty": 4
+  },
+  {
+    "roster": "A. Hoare",
+    "subjects": [
+      "STA",
+      "MAC"
+    ],
+    "professor": "Armando Hoare",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/330690",
+    "rmp": 2.9,
+    "reviews": 53,
+    "again": 40,
+    "difficulty": 3.5
+  },
+  {
+    "roster": "A. McCormick",
+    "subjects": [
+      "PHY"
+    ],
+    "professor": "Alexander McCormick",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2044124",
+    "rmp": 2.5,
+    "reviews": 115,
+    "again": 42,
+    "difficulty": 3.9
+  },
+  {
+    "roster": "A. Phillips",
+    "subjects": [
+      "ENC"
+    ],
+    "professor": "Adam Phillips",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2228413",
+    "rmp": 4.5,
+    "reviews": 37,
+    "again": 90,
+    "difficulty": 2.7
+  },
+  {
+    "roster": "D. Howard",
+    "subjects": [
+      "PCB"
+    ],
+    "professor": "Deborah Howard",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/3127821",
+    "rmp": 2,
+    "reviews": 1,
+    "again": 0,
+    "difficulty": 4
+  },
+  {
+    "roster": "D. Lewis",
+    "subjects": [
+      "PCB"
+    ],
+    "professor": "David Lewis",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/1511010",
+    "rmp": 4,
+    "reviews": 55,
+    "again": 83,
+    "difficulty": 2.5
+  },
+  {
+    "roster": "D. Milligan",
+    "subjects": [
+      "MAC"
+    ],
+    "professor": "David Milligan",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/1213481",
+    "rmp": 1.5,
+    "reviews": 47,
+    "again": 11,
+    "difficulty": 3.3
+  },
+  {
+    "roster": "E. Lo",
+    "subjects": [
+      "PCB",
+      "BSC"
+    ],
+    "professor": "Enlin Lo",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2996555",
+    "rmp": 2.4,
+    "reviews": 37,
+    "again": 33,
+    "difficulty": 3.9
+  },
+  {
+    "roster": "F. Chowdhury",
+    "subjects": [
+      "MCB"
+    ],
+    "professor": "Fatema Chowdhury",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2916594",
+    "rmp": 3.3,
+    "reviews": 36,
+    "again": 60,
+    "difficulty": 3.3
+  },
+  {
+    "roster": "I. Chitikov",
+    "subjects": [
+      "MAP",
+      "MAC"
+    ],
+    "professor": "Igor Chitikov",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/158483",
+    "rmp": 2.9,
+    "reviews": 118,
+    "again": 54,
+    "difficulty": 2.7
+  },
+  {
+    "roster": "J. Byrd",
+    "subjects": [
+      "ART"
+    ],
+    "professor": "John Byrd",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/815996",
+    "rmp": 4.5,
+    "reviews": 12,
+    "again": 100,
+    "difficulty": 2.8
+  },
+  {
+    "roster": "J. Chilton",
+    "subjects": [
+      "EGN"
+    ],
+    "professor": "Jamie Chilton",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2432980",
+    "rmp": 3.6,
+    "reviews": 53,
+    "again": 67,
+    "difficulty": 2.4
+  },
+  {
+    "roster": "J. Gasse",
+    "subjects": [
+      "BSC",
+      "ATR"
+    ],
+    "professor": "JUlia Gasse",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/5074604",
+    "rmp": 5,
+    "reviews": 2,
+    "again": 100,
+    "difficulty": 3.5
+  },
+  {
+    "roster": "J. Park",
+    "subjects": [
+      "ACG"
+    ],
+    "professor": "Jong Chool Park",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2478213",
+    "rmp": 4.7,
+    "reviews": 46,
+    "again": 94,
+    "difficulty": 3
+  },
+  {
+    "roster": "J. Wang",
+    "subjects": [
+      "COP"
+    ],
+    "professor": "Jing Wang",
+    "rmp": 3.5,
+    "reviews": 105,
+    "again": 62,
+    "difficulty": 3.1,
+    "profileUrl": "https://www.ratemyprofessors.com/professor/786102"
+  },
+  {
+    "roster": "L. Anderson",
+    "subjects": [
+      "CHM"
+    ],
+    "professor": "Laura Anderson",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/1682015",
+    "rmp": 3.7,
+    "reviews": 73,
+    "again": 68,
+    "difficulty": 2.9
+  },
+  {
+    "roster": "L. Fan",
+    "subjects": [
+      "EEL"
+    ],
+    "professor": "Lingling Fan",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/1627130",
+    "rmp": 1.4,
+    "reviews": 15,
+    "again": 10,
+    "difficulty": 4.8
+  },
+  {
+    "roster": "M. Mangiapia",
+    "subjects": [
+      "BSC"
+    ],
+    "professor": "Mary Mangiapia",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2314120",
+    "rmp": 4.7,
+    "reviews": 13,
+    "again": 93,
+    "difficulty": 2
+  },
+  {
+    "roster": "M. Morris",
+    "subjects": [
+      "PHI"
+    ],
+    "professor": "Michael Morris",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/1511009",
+    "rmp": 4.1,
+    "reviews": 33,
+    "again": 74,
+    "difficulty": 2.9
+  },
+  {
+    "roster": "M. Nusspickel",
+    "subjects": [
+      "ENC"
+    ],
+    "professor": "Mark Nusspickel",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2309149",
+    "rmp": 4.5,
+    "reviews": 37,
+    "again": 95,
+    "difficulty": 2.9
+  },
+  {
+    "roster": "N. Bender",
+    "subjects": [
+      "ART"
+    ],
+    "professor": "Neil Bender",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/574399",
+    "rmp": 2.9,
+    "reviews": 27,
+    "again": 50,
+    "difficulty": 3.4
+  },
+  {
+    "roster": "R. Bairley",
+    "subjects": [
+      "PCB",
+      "BSC"
+    ],
+    "professor": "Robin Bairley",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2689925",
+    "rmp": 2.2,
+    "reviews": 51,
+    "again": 27,
+    "difficulty": 4
+  },
+  {
+    "roster": "R. Rauscher",
+    "subjects": [
+      "CNT"
+    ],
+    "professor": "Richard Rauscher",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2332374",
+    "rmp": 3.5,
+    "reviews": 38,
+    "again": 66,
+    "difficulty": 4
+  },
+  {
+    "roster": "S. Lee",
+    "subjects": [
+      "MAP"
+    ],
+    "professor": "Seung-Yeop Lee",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/1846171",
+    "rmp": 2.8,
+    "reviews": 27,
+    "again": 53,
+    "difficulty": 3.9
+  },
+  {
+    "roster": "S. Weldegirma",
+    "subjects": [
+      "CHM"
+    ],
+    "professor": "Solomon Weldegirma",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/940925",
+    "rmp": 3.3,
+    "reviews": 133,
+    "again": 53,
+    "difficulty": 3.4
+  },
+  {
+    "roster": "T. Eggers",
+    "subjects": [
+      "PHY"
+    ],
+    "professor": "Tatiana Eggers",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2434287",
+    "rmp": 3,
+    "reviews": 84,
+    "again": 56,
+    "difficulty": 3.3
+  },
+  {
+    "roster": "T. Nguyen",
+    "subjects": [
+      "COT"
+    ],
+    "professor": "Tung Nguyen",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/5107851",
+    "rmp": 5,
+    "reviews": 10,
+    "again": 100,
+    "difficulty": 1.1
+  },
+  {
+    "roster": "T. Smith",
+    "subjects": [
+      "ACG"
+    ],
+    "professor": "Thomas Smith",
+    "profileUrl": "https://www.ratemyprofessors.com/professor/2530632",
+    "rmp": 5,
+    "reviews": 5,
+    "again": 100,
+    "difficulty": 2.2
+  }
+]

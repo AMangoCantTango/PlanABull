@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { withProfessorRating } from "./professorRatings";
 import type { Section } from "./planner";
 function section(value: unknown): value is Section {
   if (!value || typeof value !== "object") return false;
   const s = value as Section;
   return (
+    s.sample !== true &&
     typeof s.course === "string" &&
     typeof s.number === "string" &&
     typeof s.professor === "string" &&
@@ -14,34 +16,24 @@ function section(value: unknown): value is Section {
     Number.isInteger(s.start) &&
     Number.isInteger(s.end) &&
     (!s.days.length || (s.start >= 0 && s.start < s.end && s.end <= 1440)) &&
-    ["Open", "Waitlist", "Closed"].includes(s.seat) &&
-    [s.rmp, s.coursicle, s.difficulty].every(
-      (n) => Number.isFinite(n) && n >= 0 && n <= 5,
-    ) &&
-    Number.isInteger(s.reviews) &&
-    s.reviews >= 0 &&
-    Number.isFinite(s.again) &&
-    s.again >= 0 &&
-    s.again <= 100
+    ["Open", "Waitlist", "Closed"].includes(s.seat)
   );
 }
 export function useSectionFeed() {
   const [feed, setFeed] = useState<Section[] | null>(null);
   const [status, setStatus] = useState(
-    import.meta.env.VITE_API_URL
-      ? "Connecting to section feed"
-      : "Sample sections, ratings and seats",
+    "Loading USF schedule",
   );
   useEffect(() => {
     const base = import.meta.env.VITE_API_URL;
-    if (!base) return;
+
     const abort = new AbortController();
     const timeout = setTimeout(() => abort.abort(), 10000);
     let active = true;
     async function load() {
       try {
         const res = await fetch(
-          base.replace(/\/+$/, "") + "/courses?term=202701",
+          base ? base.replace(/\/+$/, "") + "/courses?term=202701" : import.meta.env.BASE_URL + "usf-sections.json",
           { signal: abort.signal },
         );
         if (!res.ok) throw new Error();
@@ -55,11 +47,11 @@ export function useSectionFeed() {
         )
           throw new Error();
         if (active) {
-          setFeed(body.sections.map((s: Section) => ({ ...s, sample: false })));
-          setStatus("Connected section feed");
+          setFeed(body.sections.map(withProfessorRating));
+          setStatus(body.retrieved ? "USF schedule snapshot: " + body.retrieved : "Connected section feed");
         }
       } catch {
-        if (active) setStatus("Feed unavailable · Sample sections, ratings and seats");
+        if (active) setStatus("Section feed unavailable");
       }
     }
     load();

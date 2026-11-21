@@ -703,7 +703,7 @@ select {
   color: var(--muted);
 }
 .course-controls,
-.cart-row label {
+.cart-row .cart-course {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -842,7 +842,7 @@ textarea {
 .section-card .actions {
   justify-content: space-between;
 }
-.cart-row label {
+.cart-row .cart-course {
   flex: 1;
 }
 @media (min-width: 1600px) {
@@ -1139,3 +1139,5 @@ textarea {
 .audit-panel li {
   overflow-wrap: anywhere;
 }
+
+.cart-row .cart-course { text-align: left; flex: 1; }

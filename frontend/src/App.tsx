@@ -1,5 +1,5 @@
 import { AuditImport } from "./AuditImport";
-import { auditOptions } from "./audit";
+import { auditOptions, requiredAuditCourse } from "./audit";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -34,7 +34,6 @@ import {
   presets,
   programs,
   quickSelect,
-  sampleSections,
   type Course,
   type Section,
   type Preset,
@@ -125,17 +124,15 @@ function App() {
     ],
     [program, plan.custom],
   );
-  const offerings = useMemo(
-    () =>
-      courses.map((course, i) => ({
-        course,
-        sections:
-          feed && (course.semester || program.courses.some(c => c.code === course.code))
-            ? feed.filter((s) => s.course === course.code)
-            : sampleSections(course, i),
-      })),
-    [courses, feed, program],
-  );
+  const offerings = useMemo(() => {
+    const byCourse = new Map<string, Section[]>();
+    for (const section of feed ?? []) {
+      const group = byCourse.get(section.course);
+      if (group) group.push(section);
+      else byCourse.set(section.course, [section]);
+    }
+    return courses.map(course => ({course, sections: byCourse.get(course.code) ?? []}));
+  }, [courses, feed]);
   const planned = useMemo(
     () => offerings.filter((o) => plan.planned.includes(o.course.code)),
     [offerings, plan.planned],
@@ -145,6 +142,7 @@ function App() {
     [planned, plan.preset, plan.openOnly, plan.pins],
   );
   const sections = result.sections;
+  const ratings = sections.flatMap(s => s.rmp === undefined ? [] : [s.rmp]);
   const visibleCourses = courses.filter(
     (c) =>
       (filter === "All" || filter === c.category) &&
@@ -229,6 +227,34 @@ function App() {
       completed: toggle(plan.completed, code),
       planned: plan.planned.filter((k) => k !== code),
     });
+  }
+  function prepareAuditCart() {
+    if (result.errors.length) {
+      setToast("Resolve the pinned section conflicts before preparing the cart.");
+      return;
+    }
+    const occupied = [...sections];
+    const newPins = { ...plan.pins };
+    const additions: string[] = [];
+    let review = 0;
+    for (const row of plan.audit) {
+      const code = requiredAuditCourse(row);
+      if (!code) { review++; continue; }
+      if (plan.completed.includes(code) || occupied.some(s => s.course === code && s.seat === "Open")) continue;
+      if (plan.planned.includes(code)) { review++; continue; }
+      const offering = offerings.find(o => o.course.code === code);
+      const eligible = offering?.sections.filter(s =>
+        s.seat === "Open" && !occupied.some(existing => conflicts(existing, s))
+      );
+      if (!offering || !eligible?.length) { review++; continue; }
+      const [section] = optimize([{ ...offering, sections: eligible }], plan.preset, true, {}).sections;
+      occupied.push(section);
+      additions.push(code);
+      newPins[code] = section.crn;
+    }
+    update({ planned: [...plan.planned, ...additions], pins: newPins });
+    go("Registration cart");
+    setToast(`Added ${additions.length} courses to the worksheet. ${review} audit rows need review.`);
   }
   function importCourses() {
     update({ custom: [...new Set([...plan.custom, ...fresh])] });
@@ -426,10 +452,9 @@ function App() {
                   { icon: MapPin, n: campusDays, label: "Campus days" },
                   {
                     icon: Star,
-                    n: sections.length
+                    n: ratings.length
                       ? (
-                          sections.reduce((n, s) => n + s.rmp, 0) /
-                          sections.length
+                          ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
                         ).toFixed(1)
                       : "—",
                     label: "Avg. RMP rating",
@@ -551,6 +576,10 @@ function App() {
                       From your last reviewed audit. Choose the courses you want
                       to plan this term.
                     </p>
+                    <button className="primary" onClick={prepareAuditCart}>
+                      Prepare registration cart from audit
+                    </button>
+                    <p>Automatically select open sections for named courses that fit your schedule. Review alternatives here and submit enrollment in MyUSF.</p>
                     <ul>
                       {plan.audit.map((text) => (
                         <li key={text}>
@@ -706,10 +735,19 @@ function App() {
             <RegistrationCart
               sections={sections}
               credits={credits}
-              registered={plan.registered}
-              toggle={(id) =>
-                update({ registered: toggle(plan.registered, id) })
-              }
+              missing={missing.map(o => o.course.code)}
+              remove={code => {
+                const pins = { ...plan.pins };
+                const crns = new Set(offerings.find(o => o.course.code === code)?.sections.map(s => s.crn));
+                if (pins[code]) crns.add(pins[code]);
+                delete pins[code];
+                update({
+                  planned: plan.planned.filter(c => c !== code),
+                  pins,
+                  registered: plan.registered.filter(id => !crns.has(id)),
+                });
+              }}
+              chooseProfessor={setModal}
               notify={setToast}
             />
           )}
@@ -801,7 +839,7 @@ function App() {
         <Modal title={modal} close={() => setModal("")}>
           <p>
             Paste text from the catalog, DegreeWorks, or an advising email. New
-            courses use sample sections and estimated credits.
+            courses use published sections when available. Imported credit amounts are estimates.
           </p>
           <textarea
             autoFocus
@@ -846,9 +884,9 @@ function App() {
             <a
               target="_blank"
               rel="noreferrer"
-              href={courseLinks(selected.course.code).coursicle}
+              href="https://usfweb.usf.edu/DSS/StaffScheduleSearch"
             >
-              Coursicle ↗
+              USF schedule search ↗
             </a>
           </div>
           {plan.pins[selected.course.code] &&
@@ -890,17 +928,14 @@ function App() {
                 <small>
                   {meeting(s)} {s.sample ? "· Sample section" : ""}
                 </small>
-                <p>
-                  RMP {s.rmp.toFixed(1)}/5 · Difficulty {s.difficulty}/5 ·{" "}
-                  {s.again}% would take again · {s.reviews} reviews
-                </p>
-                <p>Coursicle {s.coursicle.toFixed(1)}/5</p>
+                <p>{s.rmp === undefined ? "No verified RMP rating" : [
+                  `RMP ${s.rmp.toFixed(1)}/5`,
+                  s.difficulty !== undefined && `Difficulty ${s.difficulty}/5`,
+                  s.again !== undefined && `${s.again}% would take again`,
+                  s.reviews !== undefined && `${s.reviews} reviews`,
+                ].filter(Boolean).join(" | ")}</p>
                 <div className="actions">
-                  <a
-                    href={
-                      "https://www.ratemyprofessors.com/search/professors/1262?q=" +
-                      encodeURIComponent(s.professor)
-                    }
+                  <a href={s.profileUrl || "https://www.ratemyprofessors.com/search/professors/1262?q=" + encodeURIComponent(s.professor)}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -914,14 +949,17 @@ function App() {
                         blocked ||
                         (plan.openOnly && s.seat !== "Open"))
                     }
-                    onClick={() => pin(s)}
+                    onClick={() => {
+                      pin(s);
+                      if (view === "Registration cart" && !pinned) setModal("");
+                    }}
                   >
                     <Pin size={13} />
                     {pinned
-                      ? "Unpin section"
+                      ? "Clear section choice"
                       : blocked
                         ? "Conflicts with pin"
-                        : "Pin section"}
+                        : "Choose this section"}
                   </button>
                 </div>
               </article>

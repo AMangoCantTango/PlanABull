@@ -3,14 +3,15 @@ import { meeting, type Section } from "./planner";
 export function RegistrationCart({
   sections,
   credits,
-  registered,
-  toggle,
+  chooseProfessor,
   notify,
+  missing, remove,
 }: {
   sections: Section[];
   credits: number;
-  registered: string[];
-  toggle: (id: string) => void;
+  chooseProfessor: (code: string) => void;
+  missing: string[];
+  remove: (code: string) => void;
   notify: (s: string) => void;
 }) {
   async function copy(value: string) {
@@ -29,9 +30,7 @@ export function RegistrationCart({
       <div className="kicker">SPRING 2027</div>
       <h2>Registration worksheet</h2>
       <p>
-        {sections.length} courses · {credits} credits ·{" "}
-        {ids.filter((id) => registered.includes(id)).length}/{ids.length} marked
-        registered
+        {sections.length} scheduled courses / {credits} credits. Select a course to choose its professor and meeting time.
       </p>
       {sections.some((s) => s.sample) && (
         <p className="notice">
@@ -41,12 +40,7 @@ export function RegistrationCart({
       )}
       {sections.map((s) => (
         <div className="cart-row" key={s.crn}>
-          <label>
-            <input
-              type="checkbox"
-              checked={registered.includes(s.crn)}
-              onChange={() => toggle(s.crn)}
-            />
+          <button className="cart-course" aria-label={"Choose professor for " + s.course} onClick={() => chooseProfessor(s.course)}>
             <span>
               <b>
                 {s.course} · {s.number}
@@ -55,14 +49,21 @@ export function RegistrationCart({
                 {s.professor} · {meeting(s)}
               </small>
             </span>
-          </label>
+          </button>
+          <button className="pill" aria-label={"Remove " + s.course} onClick={() => remove(s.course)}>Remove</button>
           <code>{s.crn}</code>
           <button title={"Copy " + s.crn} onClick={() => copy(s.crn)}>
             <Copy size={16} />
           </button>
         </div>
       ))}
-      {!ids.length && <p>Plan courses to add sections to your cart.</p>}
+      {missing.map(code => <div className="cart-row" key={code}>
+        <button className="cart-course" aria-label={"Choose professor for " + code} onClick={() => chooseProfessor(code)}>
+          <span><b>{code}</b><small>No section scheduled under current preferences</small></span>
+        </button>
+        <button className="pill" aria-label={"Remove " + code} onClick={() => remove(code)}>Remove</button>
+      </div>)}
+      {!ids.length && !missing.length && <p>Plan courses to add sections to your cart.</p>}
       <p className="crns">{ids.join(", ")}</p>
       <div className="actions">
         <button
