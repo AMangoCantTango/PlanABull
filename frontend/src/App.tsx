@@ -361,9 +361,7 @@ function App() {
     <div className="app">
       <aside className="sidebar">
         <button className="brand" onClick={() => go("Overview")}>
-          <span className="brand-icon">
-            <Layers3 size={24} strokeWidth={2.7} />
-          </span>
+          <img className="brand-icon" src={import.meta.env.BASE_URL + "usf.ico"} alt="USF" width="32" height="32" />
           PlanABull
         </button>
         <div className="nav-label">WORKSPACE</div>
@@ -559,7 +557,7 @@ function App() {
                 <div className="panel-head">
                   <div>
                     <div className="kicker">DEGREEWORKS</div>
-                    <h2>Remaining requirements</h2>
+                    <h2>Classes needed</h2>
                   </div>
                   <button
                     className="pill"
@@ -735,13 +733,34 @@ function App() {
             <RegistrationCart
               sections={sections}
               credits={credits}
+              offerings={planned}
+              backups={plan.backups}
+              feedStatus={status}
+              saveBackup={(course, crn) => {
+                const backups = { ...plan.backups };
+                if (crn) backups[course] = crn;
+                else delete backups[course];
+                update({ backups });
+              }}
+              applyBackup={section => {
+                const pins = { ...plan.pins };
+                for (const current of sections) pins[current.course] = current.crn;
+                pins[section.course] = section.crn;
+                const backups = { ...plan.backups };
+                delete backups[section.course];
+                update({ pins, backups });
+                setToast("Backup applied to your schedule");
+              }}
               missing={missing.map(o => o.course.code)}
               remove={code => {
                 const pins = { ...plan.pins };
                 const crns = new Set(offerings.find(o => o.course.code === code)?.sections.map(s => s.crn));
                 if (pins[code]) crns.add(pins[code]);
                 delete pins[code];
+                const backups = { ...plan.backups };
+                delete backups[code];
                 update({
+                  backups,
                   planned: plan.planned.filter(c => c !== code),
                   pins,
                   registered: plan.registered.filter(id => !crns.has(id)),

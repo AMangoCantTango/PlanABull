@@ -1,3 +1,4 @@
+import { courseRequirements } from "./audit";
 import {
   presets,
   programs,
@@ -11,6 +12,7 @@ export interface Plan {
   planned: string[];
   completed: string[];
   custom: string[];
+  backups: Record<string, string>;
   pins: Record<string, string>;
   registered: string[];
   preset: Preset;
@@ -28,6 +30,7 @@ export function newPlan(name: string): Plan {
     audit: [],
     completed: [],
     custom: [],
+    backups: {},
     pins: {},
     registered: [],
     preset: "Balanced",
@@ -64,10 +67,13 @@ export function loadPlanState(): State {
       const completed = strings(s.completed);
       plans[program.name] = {
         planned: strings(s.planned).filter((c) => !completed.includes(c)),
-        audit: strings(s.audit),
+        audit: courseRequirements(strings(s.audit)),
         completed,
         custom: parseCatalog(strings(s.custom).join(" ")),
         registered: strings(s.registered),
+        backups: Object.fromEntries(Object.entries(s.backups || {}).filter(
+          (entry): entry is [string, string] => typeof entry[1] === "string" && /^\d{5}$/.test(entry[1])
+        )),
         pins: Object.fromEntries(
           Object.entries(s.pins || {}).filter(
             (entry): entry is [string, string] => typeof entry[1] === "string",

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
+import { courseRequirements } from "./audit";
+
 export function AuditImport({
   major,
   onApply,
@@ -21,13 +23,13 @@ export function AuditImport({
     setMessage("");
     try {
       const { readAuditPdf } = await import("./readAuditPdf");
-      const entries = await readAuditPdf(file, controller.signal);
+      const entries = courseRequirements(await readAuditPdf(file, controller.signal));
       if (controller.signal.aborted) return;
       setRows(entries.map((text) => ({ text, keep: true })));
       setMessage(
         entries.length
-          ? "Review each extracted requirement against your audit. Edit the wording or uncheck any incorrect matches."
-          : "No explicit “Still needed:” entries were recognized. Check your audit before concluding you have no requirements left.",
+          ? "Select the classes to save."
+          : "No specific needed classes were found in this audit.",
       );
     } catch (error) {
       if (controller.signal.aborted) return;
@@ -71,7 +73,7 @@ export function AuditImport({
       </label>
       <p role="status">{busy ? "Reading audit…" : message}</p>
       {rows.map((row, i) => (
-        <div className="audit-edit" key={i}>
+        <label className="audit-edit" key={i}>
           <input
             type="checkbox"
             aria-label={"Include requirement " + (i + 1)}
@@ -82,16 +84,8 @@ export function AuditImport({
               )
             }
           />
-          <textarea
-            aria-label={"Requirement " + (i + 1)}
-            value={row.text}
-            onChange={(e) =>
-              setRows((r) =>
-                r.map((v, j) => (i === j ? { ...v, text: e.target.value } : v)),
-              )
-            }
-          />
-        </div>
+          <span>{row.text}</span>
+        </label>
       ))}
       {!!rows.length && (
         <>
@@ -101,7 +95,7 @@ export function AuditImport({
             disabled={!kept.length || busy}
             onClick={() => onApply(kept)}
           >
-            Apply {kept.length} requirements
+            Save selected classes
           </button>
         </>
       )}

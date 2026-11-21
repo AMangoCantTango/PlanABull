@@ -1,12 +1,19 @@
+import { Fragment, useState } from "react";
+import { backupSections } from "./backups";
 import { Copy, ExternalLink } from "lucide-react";
-import { meeting, type Section } from "./planner";
+import { meeting, type Offering, type Section } from "./planner";
 export function RegistrationCart({
   sections,
   credits,
   chooseProfessor,
   notify,
-  missing, remove,
+  missing, remove, offerings, backups, saveBackup, applyBackup, feedStatus,
 }: {
+  offerings: Offering[];
+  backups: Record<string, string>;
+  saveBackup: (course: string, crn?: string) => void;
+  applyBackup: (section: Section) => void;
+  feedStatus: string;
   sections: Section[];
   credits: number;
   chooseProfessor: (code: string) => void;
@@ -14,6 +21,7 @@ export function RegistrationCart({
   remove: (code: string) => void;
   notify: (s: string) => void;
 }) {
+  const [expanded, setExpanded] = useState("");
   async function copy(value: string) {
     try {
       await navigator.clipboard.writeText(value);
@@ -38,7 +46,11 @@ export function RegistrationCart({
           registering.
         </p>
       )}
-      {sections.map((s) => (
+      {sections.map((s) => {
+        const saved = backups[s.course];
+        const open = expanded === s.course;
+        const candidates = open ? backupSections(s, offerings.find(o => o.course.code === s.course)?.sections ?? [], sections) : [];
+        return <Fragment key={s.course}>
         <div className="cart-row" key={s.crn}>
           <button className="cart-course" aria-label={"Choose professor for " + s.course} onClick={() => chooseProfessor(s.course)}>
             <span>
@@ -51,12 +63,32 @@ export function RegistrationCart({
             </span>
           </button>
           <button className="pill" aria-label={"Remove " + s.course} onClick={() => remove(s.course)}>Remove</button>
+          <button className="pill" aria-expanded={open} onClick={() => setExpanded(open ? "" : s.course)}>
+            {saved ? "View backup" : "Find a backup"}
+          </button>
           <code>{s.crn}</code>
           <button title={"Copy " + s.crn} onClick={() => copy(s.crn)}>
             <Copy size={16} />
           </button>
         </div>
-      ))}
+        {open && <section className="backup-options" aria-label={"Backup sections for " + s.course}>
+          <h3>Backup for {s.course}</h3>
+          <p>{feedStatus}. Confirm seats in MyUSF before registering.</p>
+          {saved && <p>Saved CRN {saved}.{" "}
+            {!candidates.some(c => c.crn === saved) && "This section is no longer an eligible alternative. "}
+            <button className="text-link" onClick={() => saveBackup(s.course)}>Clear backup</button>
+          </p>}
+          {!candidates.length && <p>No open alternative fits your current schedule.</p>}
+          {candidates.map(c => <div className="cart-row" key={c.crn}>
+            <span><b>{c.professor} ? Section {c.number}</b><small>{meeting(c)} ? CRN {c.crn}</small></span>
+            {saved === c.crn
+              ? <button className="pill" onClick={() => { applyBackup(c); setExpanded(""); }}>Use backup</button>
+              : <button className="pill" onClick={() => saveBackup(s.course, c.crn)}>Save as backup</button>}
+          </div>)}
+          {candidates.length > 0 && <p>Using a backup pins your other scheduled sections at their current times.</p>}
+        </section>}
+        </Fragment>;
+      })}
       {missing.map(code => <div className="cart-row" key={code}>
         <button className="cart-course" aria-label={"Choose professor for " + code} onClick={() => chooseProfessor(code)}>
           <span><b>{code}</b><small>No section scheduled under current preferences</small></span>
@@ -78,9 +110,9 @@ export function RegistrationCart({
           className="primary"
           target="_blank"
           rel="noreferrer"
-          href="https://my.usf.edu/"
+          href="https://studentssb9.it.usf.edu/StudentRegistrationSsb/ssb/registration"
         >
-          Open MyUSF / OASIS <ExternalLink size={15} />
+          Open class registration <ExternalLink size={15} />
         </a>
       </div>
     </section>

@@ -64,3 +64,19 @@ export function requiredAuditCourse(text: string): string | undefined {
   const match = /^(?:(?:1 (?:class|course)|\d+ credits?) in )?([A-Z]{3})\s*(\d{4}[CL]?)[.]?$/i.exec(text.trim());
   return match ? (match[1] + " " + match[2]).toUpperCase() : undefined;
 }
+
+// Keep named-course requirements and their choice rules, including shared-subject shorthand.
+export function courseRequirements(entries: string[]): string[] {
+  const labels = new Set<string>();
+  for (const entry of entries) {
+    const text = entry.trim().replace(/\s+/g, " ");
+    if (/^see\b/i.test(text) || !auditOptions(text).length) continue;
+    const match = /^(?:(\d+) (class(?:es)?|courses?|credits?) (?:in|from|of) )?([A-Z]{3}\s*\d{4}[CL]?\b.*)$/i.exec(text);
+    if (!match) continue;
+    const [, count, unit, courses] = match;
+    const prefix = count && !(count === "1" && /^(class|course)$/i.test(unit))
+      ? count + " " + unit.toLowerCase() + " in " : "";
+    labels.add(prefix + courses);
+  }
+  return [...labels];
+}

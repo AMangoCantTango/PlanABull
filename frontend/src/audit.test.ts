@@ -43,3 +43,14 @@ it("only prepares unambiguous named audit courses", () => {
   expect(requiredAuditCourse("COP 4530 or COP 4600")).toBeUndefined();
   expect(requiredAuditCourse("6 Credits in COP 4@ except COP 4530")).toBeUndefined();
 });
+
+it("shows named classes and grouped choices while dropping audit notes", async () => {
+  const { courseRequirements } = await import("./audit");
+  expect(courseRequirements([
+    "See Major in Info Technology BSIT section",
+    "A minimum of 42 credits at 3000 or above are required",
+    "1 Class in CGS 3853", "1 Class in CIS 4253 or LIS 4414",
+    "12 Credits in CIS 4947 or CNT 4716C or COP 3353 or 4368 or 4900",
+  ])).toEqual(["CGS 3853", "CIS 4253 or LIS 4414",
+    "12 credits in CIS 4947 or CNT 4716C or COP 3353 or 4368 or 4900"]);
+});

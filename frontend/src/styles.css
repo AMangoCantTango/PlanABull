@@ -107,7 +107,6 @@ main {
   letter-spacing: -1.3px;
   padding: 0 10px;
 }
-.brand-icon,
 .footer-icon,
 .profile-icon {
   display: grid;
@@ -115,10 +114,9 @@ main {
   border-radius: 10px;
 }
 .brand-icon {
-  width: 35px;
-  height: 35px;
-  color: #0c2015;
-  background: var(--green);
+  width: 32px;
+  height: 32px;
+  flex: none;
 }
 .nav-label,
 .kicker,
@@ -304,7 +302,7 @@ h3 {
 .primary,
 .round,
 .seg {
-  border-radius: 999px;
+  border-radius: 12px;
 }
 .season,
 .pill {
@@ -326,7 +324,7 @@ h3 {
   isolation: isolate;
   overflow: hidden;
   min-height: 194px;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid #325440;
   background: linear-gradient(108deg, #182e23 12%, #102c20 60%, #10281d);
 }
@@ -453,7 +451,7 @@ h3 {
   gap: 5px;
   padding: 7px 10px;
   font-size: 11px;
-  border-radius: 50px;
+  border-radius: 9px;
   color: #9ba79e;
 }
 .seg button[aria-pressed="true"] {
@@ -668,7 +666,7 @@ select {
 .search-row label {
   flex: 1;
   border: 1px solid var(--line);
-  border-radius: 30px;
+  border-radius: 12px;
   padding: 0 14px;
   background: #111512;
   color: var(--muted);
@@ -773,7 +771,7 @@ dialog {
   background: #1c211e;
   color: inherit;
   border: 1px solid #39443d;
-  border-radius: 15px;
+  border-radius: 13px;
   box-shadow: 0 16px 60px #0009;
 }
 dialog::backdrop {
@@ -823,7 +821,7 @@ textarea {
 .seat {
   font-size: 11px;
   padding: 3px 7px;
-  border-radius: 20px;
+  border-radius: 8px;
   background: #3c382b;
   color: #efd59e;
 }
@@ -1126,15 +1124,21 @@ textarea {
 }
 .audit-edit {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
 }
 .audit-edit input {
-  margin-top: 15px;
+  flex: none;
+  margin: 0;
 }
-.audit-edit textarea {
-  min-height: 58px;
-  margin: 4px 0;
+.audit-edit span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .audit-panel li {
   overflow-wrap: anywhere;
