@@ -1,0 +1,856 @@
+[
+  {
+    "name": "Computer Science B.S.C.S.",
+    "curriculum": "https://catalog.usf.edu/preview_program.php?catoid=25&poid=13067",
+    "sequence": "https://usf.box.com/s/esrb0a5e1ruozh5wbqm25wdsbyvk62gi",
+    "courses": [
+      {
+        "code": "CIS 1930",
+        "title": "Freshman Seminar for Computing",
+        "credits": 1,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "COP 2510",
+        "title": "Programming Concepts",
+        "credits": 3,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "ENC 1101",
+        "title": "Composition I",
+        "credits": 3,
+        "category": "Core",
+        "semester": 1
+      },
+      {
+        "code": "MAC 2311",
+        "title": "Calculus I",
+        "credits": 4,
+        "category": "Core",
+        "semester": 1
+      },
+      {
+        "code": "COP 3514",
+        "title": "Program Design",
+        "credits": 3,
+        "category": "Major",
+        "semester": 2
+      },
+      {
+        "code": "ENC 1102",
+        "title": "Composition II",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "MAC 2312",
+        "title": "Calculus II",
+        "credits": 4,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "PHY 2048",
+        "title": "General Physics I - Calculus Based",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "PHY 2048L",
+        "title": "General Physics I Laboratory",
+        "credits": 1,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "CDA 3103",
+        "title": "Computer Organization",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "COT 3100",
+        "title": "Introduction to Discrete Structures",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "PHY 2049",
+        "title": "General Physics II - Calculus Based",
+        "credits": 3,
+        "category": "Core",
+        "semester": 4
+      },
+      {
+        "code": "PHY 2049L",
+        "title": "General Physics II Laboratory",
+        "credits": 1,
+        "category": "Core",
+        "semester": 4
+      },
+      {
+        "code": "CDA 3201",
+        "title": "Computer Logic and Design",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "CDA 3201L",
+        "title": "Computer Logic and Design Lab",
+        "credits": 1,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "COP 4530",
+        "title": "Data Structures",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "AMH 2010",
+        "title": "American History I",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "AMH 2020",
+        "title": "American History II",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "POS 2041",
+        "title": "American National Government",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "EGN 2440",
+        "title": "Probability and Statistics with Calculus",
+        "credits": 3,
+        "category": "Major",
+        "semester": 6
+      },
+      {
+        "code": "CDA 4205",
+        "title": "Computer Architecture",
+        "credits": 3,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "CDA 4205L",
+        "title": "Computer Architecture Lab",
+        "credits": 1,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "EGN 4450",
+        "title": "Introduction to Linear Systems",
+        "credits": 2,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "COT 4400",
+        "title": "Analysis of Algorithms",
+        "credits": 3,
+        "category": "Major",
+        "semester": 8
+      },
+      {
+        "code": "CNT 4419",
+        "title": "Secure Coding",
+        "credits": 3,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "COP 4600",
+        "title": "Operating Systems",
+        "credits": 3,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "CEN 4020",
+        "title": "Software Engineering",
+        "credits": 3,
+        "category": "Major",
+        "semester": 11
+      },
+      {
+        "code": "CIS 4250",
+        "title": "Ethical Issues and Professional Conduct",
+        "credits": 3,
+        "category": "Major",
+        "semester": 11
+      }
+    ]
+  },
+  {
+    "name": "Cybersecurity B.S.C.Y.S.",
+    "curriculum": "https://catalog.usf.edu/preview_program.php?catoid=25&poid=13068",
+    "sequence": "https://usf.box.com/s/hljlfry39e3dcy0izt1fnfl5zzg7afsm",
+    "courses": [
+      {
+        "code": "CGS 1540",
+        "title": "Introduction to Databases",
+        "credits": 3,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "CIS 1930",
+        "title": "Freshman Seminar for Computing",
+        "credits": 1,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "COP 2510",
+        "title": "Programming Concepts",
+        "credits": 3,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "ENC 1101",
+        "title": "Composition I",
+        "credits": 3,
+        "category": "Core",
+        "semester": 1
+      },
+      {
+        "code": "MAC 1147",
+        "title": "Precalculus Algebra and Trigonometry",
+        "credits": 4,
+        "category": "Core",
+        "semester": 1
+      },
+      {
+        "code": "COP 2513",
+        "title": "Object Oriented Programming",
+        "credits": 3,
+        "category": "Major",
+        "semester": 2
+      },
+      {
+        "code": "ENC 1102",
+        "title": "Composition II",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "MAD 2104",
+        "title": "Discrete Mathematics",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "PHY 2020",
+        "title": "Conceptual Physics",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "CIS 3213",
+        "title": "Foundations of Cybersecurity",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "ECO 2013",
+        "title": "Economic Principles (Macroeconomics)",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "STA 2023",
+        "title": "Introductory Statistics I",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "COP 3515",
+        "title": "Advanced Program Design",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "PSY 2012",
+        "title": "Introduction to Psychological Science",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "AMH 2010",
+        "title": "American History I",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "AMH 2020",
+        "title": "American History II",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "POS 2041",
+        "title": "American National Government",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "CIS 4622",
+        "title": "Hands-on Cybersecurity",
+        "credits": 3,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "COP 4538",
+        "title": "Data Structures and Algorithms",
+        "credits": 3,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "ISM 4323",
+        "title": "Information Security and IT Risk Management",
+        "credits": 3,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "CIS 4219",
+        "title": "Human Aspects of Cybersecurity",
+        "credits": 3,
+        "category": "Major",
+        "semester": 8
+      },
+      {
+        "code": "CNT 4104",
+        "title": "Computer Information Networks",
+        "credits": 3,
+        "category": "Major",
+        "semester": 8
+      },
+      {
+        "code": "CNT 4104L",
+        "title": "Computer Information Networks Laboratory",
+        "credits": 1,
+        "category": "Major",
+        "semester": 8
+      },
+      {
+        "code": "CIS 4200",
+        "title": "Penetration Testing",
+        "credits": 3,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "CNT 4403",
+        "title": "Network Security and Firewalls",
+        "credits": 3,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "COP 4703",
+        "title": "Advanced Database Systems",
+        "credits": 3,
+        "category": "Major",
+        "semester": 11
+      },
+      {
+        "code": "LIS 4414",
+        "title": "Information Policy and Ethics",
+        "credits": 3,
+        "category": "Major",
+        "semester": 11
+      }
+    ]
+  },
+  {
+    "name": "Information Technology B.S.I.T.",
+    "curriculum": "https://catalog.usf.edu/preview_program.php?catoid=25&poid=13071",
+    "sequence": "https://usf.box.com/s/puyegu2kh6ah305so40g5gtpdabihw0y",
+    "courses": [
+      {
+        "code": "CGS 1540",
+        "title": "Introduction to Databases",
+        "credits": 3,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "CIS 1930",
+        "title": "Freshman Seminar for Computing",
+        "credits": 1,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "COP 2510",
+        "title": "Programming Concepts",
+        "credits": 3,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "ENC 1101",
+        "title": "Composition I",
+        "credits": 3,
+        "category": "Core",
+        "semester": 1
+      },
+      {
+        "code": "MAC 1147",
+        "title": "Precalculus Algebra and Trigonometry",
+        "credits": 4,
+        "category": "Core",
+        "semester": 1
+      },
+      {
+        "code": "COP 2513",
+        "title": "Object Oriented Programming",
+        "credits": 3,
+        "category": "Major",
+        "semester": 2
+      },
+      {
+        "code": "ENC 1102",
+        "title": "Composition II",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "MAD 2104",
+        "title": "Discrete Mathematics",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "PHY 2020",
+        "title": "Conceptual Physics",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "CIS 3213",
+        "title": "Foundations of Cybersecurity",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "ECO 2013",
+        "title": "Economic Principles (Macroeconomics)",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "STA 2023",
+        "title": "Introductory Statistics I",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "CIS 3433",
+        "title": "System Integration and Architecture for IT",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "COP 3515",
+        "title": "Advanced Program Design",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "LDR 2010",
+        "title": "Leadership Fundamentals",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "PSY 2012",
+        "title": "Introduction to Psychological Science",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "AMH 2010",
+        "title": "American History I",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "AMH 2020",
+        "title": "American History II",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "POS 2041",
+        "title": "American National Government",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "CGS 3853",
+        "title": "Web Systems for IT",
+        "credits": 3,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "COP 4538",
+        "title": "Data Structures and Algorithms",
+        "credits": 3,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "CNT 4104",
+        "title": "Computer Information Networks",
+        "credits": 3,
+        "category": "Major",
+        "semester": 8
+      },
+      {
+        "code": "CNT 4104L",
+        "title": "Computer Information Networks Laboratory",
+        "credits": 1,
+        "category": "Major",
+        "semester": 8
+      },
+      {
+        "code": "CIS 4083",
+        "title": "Cloud Computing for IT",
+        "credits": 3,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "CNT 4603",
+        "title": "System Administration and Maintenance for Information Technology",
+        "credits": 3,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "CIS 4253",
+        "title": "Ethics for Information Technology",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 11
+      },
+      {
+        "code": "LIS 4414",
+        "title": "Information Policy and Ethics",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 11
+      },
+      {
+        "code": "COP 4703",
+        "title": "Advanced Database Systems",
+        "credits": 3,
+        "category": "Major",
+        "semester": 11
+      }
+    ]
+  },
+  {
+    "name": "Computer Science and Engineering B.S.C.S.E.",
+    "curriculum": "https://catalog.usf.edu/preview_program.php?catoid=25&poid=16995",
+    "sequence": "https://usf.box.com/s/41ywsjqeytk2stq6ycgetzd7c6kx6dqp",
+    "courses": [
+      {
+        "code": "CIS 1930",
+        "title": "Freshman Seminar for Computing",
+        "credits": 1,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "COP 2510",
+        "title": "Programming Concepts",
+        "credits": 3,
+        "category": "Major",
+        "semester": 1
+      },
+      {
+        "code": "ENC 1101",
+        "title": "Composition I",
+        "credits": 3,
+        "category": "Core",
+        "semester": 1
+      },
+      {
+        "code": "MAC 2311",
+        "title": "Calculus I",
+        "credits": 4,
+        "category": "Core",
+        "semester": 1
+      },
+      {
+        "code": "COP 3514",
+        "title": "Program Design",
+        "credits": 3,
+        "category": "Major",
+        "semester": 2
+      },
+      {
+        "code": "ENC 1102",
+        "title": "Composition II",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "MAC 2312",
+        "title": "Calculus II",
+        "credits": 4,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "PHY 2048",
+        "title": "General Physics I - Calculus Based",
+        "credits": 3,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "PHY 2048L",
+        "title": "General Physics I Laboratory",
+        "credits": 1,
+        "category": "Core",
+        "semester": 2
+      },
+      {
+        "code": "CDA 3103",
+        "title": "Computer Organization",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "COT 3100",
+        "title": "Introduction to Discrete Structures",
+        "credits": 3,
+        "category": "Major",
+        "semester": 4
+      },
+      {
+        "code": "PHY 2049",
+        "title": "General Physics II - Calculus Based",
+        "credits": 3,
+        "category": "Core",
+        "semester": 4
+      },
+      {
+        "code": "PHY 2049L",
+        "title": "General Physics II Laboratory",
+        "credits": 1,
+        "category": "Core",
+        "semester": 4
+      },
+      {
+        "code": "COP 4530",
+        "title": "Data Structures",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "CDA 3201",
+        "title": "Computer Logic and Design",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "CDA 3201L",
+        "title": "Computer Logic and Design Lab",
+        "credits": 1,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "CDA 4021",
+        "title": "Computing Circuits",
+        "credits": 3,
+        "category": "Major",
+        "semester": 5
+      },
+      {
+        "code": "AMH 2010",
+        "title": "American History I",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "AMH 2020",
+        "title": "American History II",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "POS 2041",
+        "title": "American National Government",
+        "credits": 3,
+        "category": "Elective",
+        "semester": 6
+      },
+      {
+        "code": "EGN 2440",
+        "title": "Probability and Statistics with Calculus",
+        "credits": 3,
+        "category": "Major",
+        "semester": 6
+      },
+      {
+        "code": "CDA 4205",
+        "title": "Computer Architecture",
+        "credits": 3,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "CDA 4205L",
+        "title": "Computer Architecture Lab",
+        "credits": 1,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "EGN 4450",
+        "title": "Introduction to Linear Systems",
+        "credits": 2,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "EGN 2615",
+        "title": "Economical Analysis of Systems",
+        "credits": 3,
+        "category": "Major",
+        "semester": 7
+      },
+      {
+        "code": "COT 4400",
+        "title": "Analysis of Algorithms",
+        "credits": 3,
+        "category": "Major",
+        "semester": 8
+      },
+      {
+        "code": "CDA 4203",
+        "title": "Computer System Design",
+        "credits": 3,
+        "category": "Major",
+        "semester": 8
+      },
+      {
+        "code": "CDA 4203L",
+        "title": "Computer System Design Lab",
+        "credits": 1,
+        "category": "Major",
+        "semester": 8
+      },
+      {
+        "code": "CNT 4419",
+        "title": "Secure Coding",
+        "credits": 3,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "COP 4600",
+        "title": "Operating Systems",
+        "credits": 3,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "CDA 4213",
+        "title": "CMOS-VLSI Design",
+        "credits": 3,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "CDA 4213L",
+        "title": "CMOS-VLSI Design Lab",
+        "credits": 1,
+        "category": "Major",
+        "semester": 10
+      },
+      {
+        "code": "CEN 4020",
+        "title": "Software Engineering",
+        "credits": 3,
+        "category": "Major",
+        "semester": 11
+      },
+      {
+        "code": "CIS 4910",
+        "title": "Computer Science and Engineering Project",
+        "credits": 3,
+        "category": "Major",
+        "semester": 11
+      },
+      {
+        "code": "CIS 4250",
+        "title": "Ethical Issues and Professional Conduct",
+        "credits": 3,
+        "category": "Major",
+        "semester": 11
+      }
+    ]
+  }
+]

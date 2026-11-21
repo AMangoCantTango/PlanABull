@@ -1,728 +1,916 @@
-import React, { useState, useEffect } from "react";
+import { AuditImport } from "./AuditImport";
+import { auditOptions } from "./audit";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import {
+  ArrowDownToLine,
+  ArrowRight,
   ArrowUpRight,
-  BookOpen, CheckCheck, ChevronDown, Sparkles,
+  BookOpen,
   CalendarDays,
   Check,
   ChevronRight,
-  Clock3,
-  Compass,
+  CircleCheck,
+  ExternalLink,
   GraduationCap,
+  Layers3,
   LayoutDashboard,
-  ListFilter,
+  MapPin,
+  PanelTop,
+  Pin,
   Plus,
   Search,
   Settings2,
-  ShieldCheck,
-  Trash2,
-  X,
-  Bookmark,
-  CircleHelp,
+  ShoppingBag,
   SlidersHorizontal,
-  Download,
+  Sparkles,
+  Star,
+  X,
 } from "lucide-react";
-import { getCourses, type Course } from "./api";
+import {
+  courseLinks,
+  meeting,
+  parseCatalog,
+  presets,
+  programs,
+  quickSelect,
+  sampleSections,
+  type Course,
+  type Section,
+  type Preset,
+} from "./planner";
+import { conflicts, optimize } from "./optimizer";
+import { loadPlanState, newPlan, savePlanState, type Plan } from "./storage";
+import { WeeklySchedule, colors } from "./WeeklySchedule";
+import { RegistrationCart } from "./RegistrationCart";
+import { PlanArt } from "./PlanArt";
+import { useSectionFeed } from "./SectionFeed";
 import "./styles.css";
 
-function loadSaved(): string[] | null {
-  try {
-    const data = JSON.parse(localStorage.getItem("planabull-plan") || "null");
-    return Array.isArray(data)
-      ? data.filter((id: unknown) => typeof id === "string")
-      : null;
-  } catch {
-    return null;
-  }
+const navigation = [
+  { name: "Overview", icon: LayoutDashboard },
+  { name: "Degree plan", icon: BookOpen },
+  { name: "Weekly schedule", icon: CalendarDays },
+  { name: "Registration cart", icon: ShoppingBag },
+];
+const toggle = (items: string[], key: string) =>
+  items.includes(key) ? items.filter((v) => v !== key) : [...items, key];
+function Modal({
+  title,
+  close,
+  children,
+}: {
+  title: string;
+  close: () => void;
+  children: ReactNode;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const d = ref.current!;
+    d.showModal();
+    return () => d.close();
+  }, []);
+  return (
+    <dialog
+      ref={ref}
+      aria-label={title}
+      onCancel={close}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) close();
+      }}
+    >
+      <div className="dialog-body">
+        <div className="panel-head">
+          <h2>{title}</h2>
+          <button aria-label="Close dialog" className="round" onClick={close}>
+            <X size={18} />
+          </button>
+        </div>
+        {children}
+      </div>
+    </dialog>
+  );
 }
-function overlaps(course: Course, other: Course) {
-  return course.hour < other.endHour && other.hour < course.endHour &&
-    course.days.some((day) => other.days.includes(day));
-}
+const majorLabel = (s: string) => s.split(" B.")[0];
 function App() {
-  const [view, setView] = useState("Overview");
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [catalogStatus, setCatalogStatus] = useState<"loading" | "ready" | "error">("loading");
-  const [catalogAttempt, setCatalogAttempt] = useState(0);
-  const [selected, setSelected] = useState<string[]>([]);
-  useEffect(() => {
-    const controller = new AbortController();
-    getCourses(controller.signal).then((catalog) => {
-      if (controller.signal.aborted) return;
-      const savedPlan = loadSaved();
-      const restored = savedPlan?.flatMap((id) => {
-        const course = catalog.find((entry) => entry.id === id || entry.code === id);
-        return course ? [course.id] : [];
-      });
-      setCourses(catalog);
-      setSavedIds(restored ?? null);
-      setSelected(restored
-        ? restored
-        : catalog.filter((course, index) => catalog.findIndex((entry) => entry.code === course.code) === index)
-            .slice(0, 4).map((course) => course.id));
-      setCatalogStatus("ready");
-    }).catch(() => {
-      if (!controller.signal.aborted) setCatalogStatus("error");
-    });
-    return () => controller.abort();
-  }, [catalogAttempt]);
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("All courses");
-  const [modal, setModal] = useState<"preferences" | "registration" | null>(
-    null,
+  const [state, setState] = useState(loadPlanState),
+    [view, setView] = useState("Overview"),
+    [modal, setModal] = useState(""),
+    [query, setQuery] = useState(""),
+    [filter, setFilter] = useState("All"),
+    [paste, setPaste] = useState(""),
+    [toast, setToast] = useState(""),
+    [saved, setSaved] = useState(true);
+  const program = programs.find((p) => p.name === state.major)!,
+    plan = state.plans[state.major];
+  const { feed, status } = useSectionFeed();
+  const courses = useMemo<Course[]>(
+    () => [
+      ...program.courses,
+      ...plan.custom
+        .filter((code) => !program.courses.some((c) => c.code === code))
+        .map((code) => {
+          const known = programs
+            .flatMap((p) => p.courses)
+            .find((c) => c.code === code);
+          return {
+            code,
+            title: known?.title || "Imported course",
+            credits: known?.credits ?? (code.endsWith("L") ? 1 : 3),
+            category: "Elective",
+            semester: 0,
+          };
+        }),
+    ],
+    [program, plan.custom],
   );
-  const [toast, setToast] = useState("");
-  const [savedIds, setSavedIds] = useState<string[] | null>(() => loadSaved());
-  const [noFriday, setNoFriday] = useState(false);
-  const [lateStart, setLateStart] = useState(true);
-  const [target, setTarget] = useState(12);
-  const [variant, setVariant] = useState(0);
-  useEffect(() => {
-    if (!modal) return;
-    const previous = document.activeElement as HTMLElement | null;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setModal(null);
-      if (event.key === "Tab") {
-        const elements = Array.from(
-          document.querySelectorAll<HTMLElement>(
-            ".modal button:not(:disabled), .modal input, .modal select, .modal a",
-          ),
-        );
-        const first = elements[0],
-          last = elements[elements.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last?.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      previous?.focus();
-    };
-  }, [modal]);
-  const chosen = courses.filter((c) => selected.includes(c.id));
-  const saved = !!savedIds && selected.length === savedIds.length &&
-    selected.every((id) => savedIds.includes(id));
-  const hasConflicts = chosen.some((course, index) =>
-    chosen.slice(index + 1).some((other) => overlaps(course, other)),
+  const offerings = useMemo(
+    () =>
+      courses.map((course, i) => ({
+        course,
+        sections:
+          feed && course.semester
+            ? feed.filter((s) => s.course === course.code)
+            : sampleSections(course, i),
+      })),
+    [courses, feed],
   );
-  const credits = chosen.reduce((n, c) => n + c.credits, 0);
-  const visible = courses.filter(
+  const planned = useMemo(
+    () => offerings.filter((o) => plan.planned.includes(o.course.code)),
+    [offerings, plan.planned],
+  );
+  const result = useMemo(
+    () => optimize(planned, plan.preset, plan.openOnly, plan.pins),
+    [planned, plan.preset, plan.openOnly, plan.pins],
+  );
+  const sections = result.sections;
+  const visibleCourses = courses.filter(
     (c) =>
-      `${c.id} ${c.code} ${c.title}`
-        .toLowerCase()
-        .includes(query.toLowerCase()) &&
-      (filter === "All courses" || c.category === filter),
+      (filter === "All" || filter === c.category) &&
+      (c.code + " " + c.title).toLowerCase().includes(query.toLowerCase()),
   );
-  const notify = (s: string) => {
-    setToast(s);
-    window.setTimeout(() => setToast(""), 3500);
-  };
-  const toggle = (course: Course) => {
-    setSelected((ids) => ids.includes(course.id)
-      ? ids.filter((id) => id !== course.id)
-      : [...ids.filter((id) => courses.find((entry) => entry.id === id)?.code !== course.code), course.id]);
-  };
-  function save() {
-    if (catalogStatus !== "ready") return;
-    try {
-      localStorage.setItem("planabull-plan", JSON.stringify(selected));
-      setSavedIds([...selected]);
-      notify("Your plan is saved on this device.");
-    } catch {
-      notify("This browser could not save your plan.");
+  const selected = offerings.find((o) => o.course.code === modal);
+  const credits = sections.reduce(
+    (sum, s) => sum + courses.find((c) => c.code === s.course)!.credits,
+    0,
+  );
+  const doneCredits = courses.reduce(
+    (n, c) => n + (plan.completed.includes(c.code) ? c.credits : 0),
+    0,
+  );
+  const campusDays = new Set(sections.flatMap((s) => s.days)).size;
+  const color = (code: string) =>
+    colors[
+      Math.max(
+        0,
+        planned.findIndex((o) => o.course.code === code),
+      ) % colors.length
+    ];
+  const parsed = parseCatalog(paste),
+    fresh = parsed.filter((code) => !courses.some((c) => c.code === code));
+  const activePins = planned.filter((o) => plan.pins[o.course.code]);
+  const missing = planned.filter(
+    (o) => !sections.some((s) => s.course === o.course.code),
+  );
+  function update(changes: Partial<Plan>) {
+    setState((prev) => ({
+      ...prev,
+      plans: {
+        ...prev.plans,
+        [prev.major]: { ...prev.plans[prev.major], ...changes },
+      },
+    }));
+  }
+  function go(name: string) {
+    setView(name);
+    setModal("");
+    window.scrollTo(0, 0);
+  }
+  function major(name: string) {
+    setState((prev) => ({
+      major: name,
+      plans: { ...prev.plans, [name]: prev.plans[name] || newPlan(name) },
+    }));
+    setQuery("");
+    setFilter("All");
+    setModal("");
+  }
+  useEffect(() => {
+    setSaved(savePlanState(state));
+  }, [state]);
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(""), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
+  function pin(s: Section) {
+    const pins = { ...plan.pins };
+    if (pins[s.course] === s.crn) {
+      delete pins[s.course];
+      update({ pins });
+    } else {
+      pins[s.course] = s.crn;
+      update({ pins, planned: [...new Set([...plan.planned, s.course])] });
     }
   }
-  function generate() {
-    if (catalogStatus !== "ready") return;
-    const eligible = courses.filter(
-      (course) => (!noFriday || !course.days.includes(4)) && (!lateStart || course.hour >= 10),
-    );
-    if (!eligible.length) {
-      notify("No sections match your preferences.");
-      return;
-    }
-    const shift = (variant + 1) % eligible.length;
-    const rotated = [...eligible.slice(shift), ...eligible.slice(0, shift)];
-    const plan: Course[] = [];
-    let plannedCredits = 0;
-    for (const course of rotated) {
-      if (plannedCredits + course.credits <= target &&
-          !plan.some((other) => other.code === course.code || overlaps(course, other))) {
-        plan.push(course);
-        plannedCredits += course.credits;
-      }
-    }
-    setSelected(plan.map((course) => course.id));
-    setVariant((value) => value + 1);
-    notify("Sample plan updated.");
+  function complete(code: string) {
+    update({
+      completed: toggle(plan.completed, code),
+      planned: plan.planned.filter((k) => k !== code),
+    });
   }
-  function exportPlan() {
-    const blob = new Blob(
-      [
-        `PlanABull · Spring 2027 SAMPLE PLAN\nNot live registration data.\n\n${chosen.map((c) => `${c.code} — ${c.title}\nSection: ${c.id}\n${c.time}\n`).join("\n")}`,
-      ],
-      { type: "text/plain" },
+  function importCourses() {
+    update({ custom: [...new Set([...plan.custom, ...fresh])] });
+    setPaste("");
+    setModal("");
+    setToast("Imported " + fresh.length + " courses");
+  }
+  function download() {
+    const url = URL.createObjectURL(
+      new Blob(
+        [
+          sections
+            .map((s) =>
+              [
+                s.course,
+                s.number,
+                s.crn,
+                meeting(s),
+                s.professor,
+                s.sample ? "Sample section" : "",
+              ].join(" · "),
+            )
+            .join("\n"),
+        ],
+        { type: "text/plain" },
+      ),
     );
-    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "planabull-sample-plan.txt";
+    a.download = "PlanABull-Spring-2027.txt";
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
+  const settings = (
+    <section className="panel settings">
+      <div className="panel-head">
+        <div>
+          <div className="kicker">PREFERENCES</div>
+          <h2>Schedule optimizer</h2>
+        </div>
+        <SlidersHorizontal size={19} />
+      </div>
+      <label className="field">
+        Optimization preset
+        <select
+          value={plan.preset}
+          onChange={(e) => update({ preset: e.target.value as Preset })}
+        >
+          {presets.map((p) => (
+            <option key={p}>{p}</option>
+          ))}
+        </select>
+      </label>
+      <label className="switch-label">
+        <span>Open seats only</span>
+        <input
+          type="checkbox"
+          checked={plan.openOnly}
+          onChange={(e) => update({ openOnly: e.target.checked })}
+        />
+      </label>
+      <small className="muted">
+        Changes update your schedule automatically.
+      </small>
+    </section>
+  );
+  const termCourses = (
+    <section className="panel term-list">
+      <div className="panel-head">
+        <div>
+          <div className="kicker">THIS SEMESTER</div>
+          <h2>
+            Planned courses <em>{planned.length}</em>
+          </h2>
+        </div>
+        <button
+          className="round"
+          title="Edit planned courses"
+          onClick={() => go("Degree plan")}
+        >
+          <Plus size={17} />
+        </button>
+      </div>
+      {planned.map((o) => (
+        <button
+          className="planned-row"
+          key={o.course.code}
+          onClick={() => setModal(o.course.code)}
+        >
+          <i style={{ background: color(o.course.code) }} />
+          <span>
+            <b>{o.course.code}</b>
+            <small>{o.course.title}</small>
+          </span>
+          <small>{o.course.credits} cr</small>
+        </button>
+      ))}
+      <button className="text-link" onClick={() => go("Degree plan")}>
+        Manage degree plan <ArrowRight size={14} />
+      </button>
+    </section>
+  );
   return (
     <div className="app">
       <aside className="sidebar">
-        <a
-          className="brand"
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-            setView("Overview");
-          }}
-        >
-          <span className="brand-icon"><GraduationCap size={25}/></span>planabull<span className="brand-period">.</span>
-        </a>
-        <div className="workspace"><span className="usf-mark">U</span>
-          <div>
-            <strong>University of South Florida</strong>
-            <span>Tampa campus</span>
-          </div>
-        </div>
-        <div className="nav-caption">YOUR WORKSPACE</div>
+        <button className="brand" onClick={() => go("Overview")}>
+          <span className="brand-icon">
+            <Layers3 size={24} strokeWidth={2.7} />
+          </span>
+          PlanABull
+        </button>
+        <div className="nav-label">WORKSPACE</div>
         <nav>
-          {[
-            { name: "Overview", icon: LayoutDashboard },
-            { name: "Degree plan", icon: GraduationCap },
-            { name: "Explore courses", icon: Compass },
-            { name: "My schedule", icon: CalendarDays },
-            { name: "Saved plans", icon: Bookmark },
-          ].map(({ name, icon: Icon }) => (
+          {navigation.map(({ name, icon: Icon }) => (
             <button
               key={name}
+              aria-label={name}
+              aria-current={view === name ? "page" : undefined}
               className={view === name ? "nav-item active" : "nav-item"}
-              onClick={() => setView(name)}
+              onClick={() => go(name)}
             >
-              <Icon size={19} />
-              {name}
-              {name === "Saved plans" && (
-                <span className="nav-count">{saved ? 1 : 0}</span>
-              )}
+              <Icon size={18} />
+              <span>{name}</span>
+              {name === "Registration cart" && <em>{sections.length}</em>}
             </button>
           ))}
         </nav>
-        <div className="sidebar-plan">
-          <div className="small-label">THE BIG PICTURE</div>
-          <div className="degree-icon"><GraduationCap size={23}/></div><h3>One semester closer.</h3>
-          <p>Every good plan starts with<br/>knowing where you’re headed.</p>
-          <div className="tiny-progress">
-            <span />
-          </div>
-          <div className="progress-note">
-            <strong>54 / 120</strong>
-            <span>credits complete</span>
-          </div>
-          <button onClick={() => setView("Degree plan")}>
-            View degree progress <ArrowUpRight size={15} />
+        <div className="side-bottom">
+          <div className="nav-label">ACADEMIC PROFILE</div>
+          <button className="profile" onClick={() => setModal("Major")}>
+            <span className="profile-icon">
+              <GraduationCap size={19} />
+            </span>
+            <span>
+              <strong>{majorLabel(state.major)}</strong>
+              <small>Undergraduate</small>
+            </span>
+            <Settings2 size={14} />
           </button>
-        </div>
-        <button
-          className="help"
-          onClick={() =>
-            notify(
-              "Prototype: select courses, adjust preferences, and save your plan locally.",
-            )
-          }
-        >
-          <CircleHelp size={18} /> A little help?
-        </button>
-        <div className="profile">
-          <div className="avatar">JB</div>
-          <div>
-            <strong>Jordan Bennett</strong>
-            <span>Computer Science · B.S.</span>
+          <div className="save-status">
+            <i />
+            {saved ? "Saved on this device" : "Local saving unavailable"}
           </div>
-          <button
-            aria-label="Profile preferences"
-            onClick={() => setModal("preferences")}
-          >
-            <Settings2 size={17} />
-          </button>
         </div>
       </aside>
       <main>
         <header>
-          <div className="breadcrumb">
-            Your workspace <ChevronRight size={13} />
-            <span>{view}</span>
+          <div className="crumb">
+            <PanelTop size={16} />
+            Workspace <ChevronRight size={13} />
+            <strong>{view}</strong>
           </div>
-          <div className="header-right">
-            <span className="demo-label">SAMPLE DATA</span>
-            <button className="term" onClick={()=>notify("This prototype includes Spring 2027 sample data only.")}><CalendarDays size={15}/>Spring 2027<ChevronDown size={14}/></button>
-            <div className="mini-avatar">JB</div>
-          </div>
+          <span className="university">
+            <GraduationCap size={16} />
+            University of South Florida
+          </span>
         </header>
-        <div className="main-content">
-          <div className="greeting">
+        <div className="content">
+          <div className="page-title">
             <div>
-              <div className="eyebrow">A LITTLE PLANNING. A LOT OF POSSIBILITY.</div>
-              <h1>
-                {view === "Overview"
-                  ? "Your semester, sorted."
-                  : view === "Degree plan"
-                    ? "Your path to graduation."
-                    : view === "Explore courses"
-                      ? "Find your next favorite class."
-                      : view === "Saved plans"
-                        ? "Good plans are worth keeping."
-                        : "Make room for what matters."}
-              </h1>
-              <p>
-                {view === "Overview" ? "Less tab-hopping. More moving forward. Let’s build a schedule that fits you." : "Your courses, your preferences, your next step forward."}
-              </p>
+              <div className="kicker green">REGISTRATION WORKSPACE</div>
+              <h1>{view === "Overview" ? "Semester overview" : view}</h1>
             </div>
-            <button
-              className="outline preferences"
-              onClick={() => setModal("preferences")}
-            >
-              <SlidersHorizontal size={16} /> Preferences
-            </button>
+            <span className="season">
+              <CalendarDays size={15} />
+              Spring 2027
+            </span>
           </div>
-<section className="hero"><div className="hero-copy"><span className="tag"><Sparkles size={13}/> BUILT AROUND YOU</span><h2>A smarter semester.<br/>A little more you.</h2><p>Your degree requirements, professor preferences, and life<br className="desktop-br"/> outside the classroom. Finally, on the same page.</p><button className="primary" onClick={generate} disabled={catalogStatus !== "ready"}><Sparkles size={17}/>Build my schedule</button><span className="hero-foot">Your next great semester starts here.</span></div><div className="hero-art" aria-hidden="true"><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="art-card art-back"><div className="art-top"><span/><span/><span/></div><div className="art-lines"><i/><i/><i/></div></div><div className="art-card art-front"><div className="art-card-title"><CalendarDays size={17}/> YOUR WEEK, REIMAGINED <Check size={16}/></div><div className="mini-calendar">{Array.from({length:20},(_,i)=><div key={i} className={[1,7,10,16].includes(i)?'mini-event':'mini-cell'}/>)}</div><div className="art-bottom"><span className="art-check"><Check size={12}/></span>No conflicts. More possibilities.</div></div><div className="floating-badge"><Sparkles size={15}/> Made for your next chapter</div></div></section>
-<div className="stats"><div><span className="stat-icon"><GraduationCap size={20}/></span><div><span>Degree progress</span><strong>45<span>%</span><small>54 of 120 credits</small></strong></div><div className="stat-ring">45%</div></div><div><span className="stat-icon"><BookOpen size={20}/></span><div><span>Planned this semester</span><strong>{credits}<small>credits · {chosen.length} courses</small></strong></div></div><div><span className="stat-icon"><CheckCheck size={20}/></span><div><span>Schedule check</span><strong className="stat-text">{hasConflicts ? "Time conflict" : chosen.length ? "Looking good" : "Ready to build"}<small>{hasConflicts ? "Some sections overlap" : chosen.length ? "No time conflicts" : "Add a course to get started"}</small></strong></div><span className="good-dot"/></div></div>
-          {catalogStatus === "loading" && <p role="status">Loading courses...</p>}
-          {catalogStatus === "error" && (
-            <p role="alert">
-              Could not load courses. Check that the PlanABull backend is running.{" "}
-              <button className="text-button" onClick={() => {
-                setCatalogStatus("loading");
-                setCatalogAttempt((attempt) => attempt + 1);
-              }}>Retry</button>
-            </p>
-          )}
-          <div className="content-grid">
-            <div className="left-column">
-              {view === "Degree plan" ? (
-                <section className="panel degree-panel">
-                  <div className="section-title">
-                    <div>
-                      <h2>Your degree, at a glance</h2>
-                      <p>Computer Science B.S. · Sample 2025–26 catalog</p>
-                    </div>
-                    <GraduationCap size={22} />
+          {view === "Overview" && (
+            <>
+              <section className="hero">
+                <PlanArt />
+                <div className="hero-copy">
+                  <div className="hero-tag">
+                    <i /> CURRENT PLAN
                   </div>
-                  {[
-                    { name: "General education", done: 30, total: 36 },
-                    { name: "Math & science", done: 18, total: 24 },
-                    { name: "Major core", done: 6, total: 45 },
-                    { name: "Electives", done: 0, total: 15 },
-                  ].map((r) => (
-                    <div className="requirement" key={r.name}>
-                      <div>
-                        <strong>{r.name}</strong>
-                        <span>
-                          {r.done} / {r.total} credits
-                        </span>
-                      </div>
-                      <div className="requirement-track">
-                        <span
-                          style={{ width: `${(r.done / r.total) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                  <p className="sample-note">
-                    Illustrative requirements only. Official catalog rules and
-                    transfer credit evaluation are not connected.
-                  </p>
-                </section>
-              ) : view === "Saved plans" ? (
-                <section className="panel saved-panel">
-                  <Bookmark size={28} />
-                  <h2>{savedIds ? "Spring 2027" : "No saved plan"}</h2>
+                  <h2>Spring 2027</h2>
                   <p>
-                    {saved
-                      ? `${credits} credits in your current plan. Saved locally on this device.`
-                      : "Choose your courses, then save your plan to find it here."}
+                    {majorLabel(state.major)} <span> / </span> Undergraduate
                   </p>
-                  <button
-                    className="primary"
-                    disabled={catalogStatus !== "ready"}
-                    onClick={() => {
-                      if (savedIds) {
-                        setSelected(savedIds.filter((id) => courses.some((course) => course.id === id)));
-                        setView("My schedule");
-                        setQuery("");
-                        setFilter("All courses");
-                      } else save();
-                    }}
-                  >
-                    {savedIds ? "Open saved plan" : "Save current plan"}
+                  <button className="primary" onClick={() => go("Degree plan")}>
+                    Open degree plan <ArrowUpRight size={15} />
                   </button>
-                </section>
-              ) : (
-                <section className="recommendations">
-                  <div className="section-title">
+                </div>
+              </section>
+              <div className="stats">
+                {[
+                  {
+                    icon: BookOpen,
+                    n: sections.length,
+                    label: "Scheduled courses",
+                  },
+                  { icon: Layers3, n: credits, label: "Credit hours" },
+                  { icon: MapPin, n: campusDays, label: "Campus days" },
+                  {
+                    icon: Star,
+                    n: sections.length
+                      ? (
+                          sections.reduce((n, s) => n + s.rmp, 0) /
+                          sections.length
+                        ).toFixed(1)
+                      : "—",
+                    label: "Avg. RMP rating",
+                  },
+                ].map(({ icon: Icon, n, label }) => (
+                  <div className="metric" key={label}>
+                    <Icon size={18} />
                     <div>
-                      <h2>
-                        {view === "My schedule"
-                          ? "Courses in your plan"
-                          : "Your next moves"}
-                        <span className="subtle-tag">
-                          {view === "My schedule"
-                            ? chosen.length
-                            : "Recommended"}
-                        </span>
-                      </h2>
-                      <p>
-                        {view === "My schedule"
-                          ? "Everything you’ve added to your semester."
-                          : "Courses that move your degree forward."}
-                      </p>
+                      <strong>{n}</strong>
+                      <small>{label}</small>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          <div className="feed-status">
+            <i />
+            {status}
+          </div>
+          {!!missing.length && (
+            <div className="notice">
+              {result.errors.length
+                ? "Pinned sections conflict or fail the seat filter. Review pins for "
+                : "Could not schedule "}{" "}
+              {missing.map((o) => (
+                <button
+                  className="inline-link"
+                  onClick={() => setModal(o.course.code)}
+                  key={o.course.code}
+                >
+                  {o.course.code}
+                </button>
+              ))}
+            </div>
+          )}
+          {(view === "Overview" || view === "Weekly schedule") && (
+            <div className="columns">
+              <WeeklySchedule
+                sections={sections}
+                open={setModal}
+                color={color}
+              />
+              <div className="rail">
+                {settings}
+                {termCourses}
+                <button
+                  className="pill"
+                  onClick={download}
+                  disabled={!sections.length}
+                >
+                  <ArrowDownToLine size={15} />
+                  Download schedule
+                </button>
+              </div>
+            </div>
+          )}
+          {view === "Degree plan" && (
+            <>
+              <section className="panel">
+                <div className="panel-head">
+                  <div>
+                    <div className="kicker">
+                      2026–2027 UNDERGRADUATE CATALOG
+                    </div>
+                    <h2>{state.major}</h2>
+                  </div>
+                  <button className="pill" onClick={() => setModal("Major")}>
+                    Change major
+                  </button>
+                </div>
+                <p>
+                  Named courses from the four-year plan. See the official
+                  curriculum for elective choices and prerequisites.
+                </p>
+                <div className="actions">
+                  <a
+                    className="text-link"
+                    target="_blank"
+                    rel="noreferrer"
+                    href={program.curriculum}
+                  >
+                    USF curriculum <ExternalLink size={13} />
+                  </a>
+                  <a
+                    className="text-link"
+                    target="_blank"
+                    rel="noreferrer"
+                    href={program.sequence}
+                  >
+                    Four-year plan <ExternalLink size={13} />
+                  </a>
+                </div>
+                <div className="summary">
+                  {doneCredits} credits completed ·{" "}
+                  {planned.reduce((n, o) => n + o.course.credits, 0)} credits
+                  planned
+                </div>
+              </section>
+              <section className="panel audit-panel">
+                <div className="panel-head">
+                  <div>
+                    <div className="kicker">DEGREEWORKS</div>
+                    <h2>Remaining requirements</h2>
+                  </div>
+                  <button
+                    className="pill"
+                    onClick={() => setModal("DegreeWorks audit")}
+                  >
+                    {plan.audit.length
+                      ? "Replace audit PDF"
+                      : "Import audit PDF"}
+                  </button>
+                </div>
+                {plan.audit.length ? (
+                  <>
+                    <p>
+                      From your last reviewed audit. Choose the courses you want
+                      to plan this term.
+                    </p>
+                    <ul>
+                      {plan.audit.map((text) => (
+                        <li key={text}>
+                          {text}
+                          <div className="actions">
+                            {auditOptions(text).map((code) => {
+                              const completed = plan.completed.includes(code),
+                                planned = plan.planned.includes(code);
+                              return (
+                                <button
+                                  className="pill"
+                                  key={code}
+                                  disabled={completed}
+                                  aria-pressed={planned}
+                                  onClick={() =>
+                                    update({
+                                      custom: courses.some(
+                                        (c) => c.code === code,
+                                      )
+                                        ? plan.custom
+                                        : [...plan.custom, code],
+                                      planned: toggle(plan.planned, code),
+                                    })
+                                  }
+                                >
+                                  {completed
+                                    ? "Completed"
+                                    : planned
+                                      ? "Planned"
+                                      : "Plan"}{" "}
+                                  {code}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                     <button
-                      className="text-button"
-                      onClick={() =>
-                        setView(
-                          view === "Explore courses"
-                            ? "Overview"
-                            : "Explore courses",
-                        )
-                      }
+                      className="text-link"
+                      onClick={() => setModal("Remove saved audit")}
                     >
-                      {view === "Explore courses"
-                        ? "Back to overview"
-                        : "Explore all"}
-                      <ArrowUpRight size={15} />
+                      Remove saved audit
+                    </button>
+                  </>
+                ) : (
+                  <p>
+                    Import a DegreeWorks PDF to see the courses and credit
+                    requirements your audit marks as still needed.
+                  </p>
+                )}
+              </section>
+              <section className="panel catalog">
+                <div className="panel-head">
+                  <h2>Course planner</h2>
+                  <div className="actions">
+                    <button
+                      className="pill"
+                      onClick={() => {
+                        setPaste("");
+                        setModal("Paste from Catalog");
+                      }}
+                    >
+                      <Plus size={14} />
+                      Paste from Catalog
+                    </button>
+                    <button
+                      className="primary"
+                      onClick={() => {
+                        update({
+                          planned: quickSelect(courses, plan.completed),
+                        });
+                        setToast("Term selection updated");
+                      }}
+                    >
+                      <Sparkles size={15} />
+                      Quick select first 4
                     </button>
                   </div>
-                  <div className="course-tools">
-                    <label className="search">
-                      <Search size={17} />
-                      <input
-                        aria-label="Search courses or sections"
-                        placeholder="Search courses or sections"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                      />
-                      {query && (
-                        <button
-                          aria-label="Clear search"
-                          onClick={() => setQuery("")}
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </label>
-                    <label className="filter">
-                      <ListFilter size={15} />
-                      <select
-                        aria-label="Course category"
-                        value={filter}
-                        onChange={(e) => setFilter(e.target.value)}
-                      >
-                        {[
-                          "All courses",
-                          ...new Set(courses.map((course) => course.category)),
-                        ].map((x) => (
-                          <option key={x}>{x}</option>
-                        ))}
-                      </select>
-                    </label>
-                  </div>
-                  <div className="course-list">
-                    {visible
-                      .filter(
-                        (c) =>
-                          view !== "My schedule" || selected.includes(c.id),
-                      )
-                      .map((c) => (
-                        <article className="course" key={c.id}>
-                          <div className={`course-art ${c.color}`}><span>{c.glyph}</span><small>{c.code.split(' ')[0]}</small></div><div className="course-info">
-                            <div className="course-meta">
-                              {c.code}
-                              <span>·</span>
-                              {c.credits} credits
-                              <span className="category">{c.category}</span>
-                            </div>
-                            <h3>{c.title}</h3>
-                            <div className="professor">
-                              Section {c.id} ({c.seatsAvailable} seats available)
-                            </div>
-                            <div className="course-time">
-                              <Clock3 size={12} />
-                              {c.time}
-                            </div>
-                          </div>
-                          <button
-                            aria-label={`${selected.includes(c.id) ? "Remove" : "Add"} ${c.id}`}
-                            className={`add-course ${selected.includes(c.id) ? "added" : ""}`}
-                            onClick={() => toggle(c)}
-                          >
-                            {selected.includes(c.id)?<Check size={19}/>:<Plus size={19}/>}
-                          </button>
-                        </article>
-                      ))}
-                    {catalogStatus === "ready" && visible.filter(
-                      (c) => view !== "My schedule" || selected.includes(c.id),
-                    ).length === 0 && (
-                      <p className="empty">
-                        No courses match. Try another search or category.
-                      </p>
-                    )}
-                  </div>
-                  <div className="ratings-note">
-                    <ShieldCheck size={14} />
-                    Course and section details come from the PlanABull sample catalog.
-                  </div>
-                </section>
-              )}
-            </div>
-            <section className="panel schedule">
-              <div className="section-title">
-                <div>
-                  <h2>Your week, at a glance</h2>
-                  <p>A little structure. A lot of breathing room.</p>
                 </div>
-                <CalendarDays size={18} />
-              </div>
-              <div className="schedule-toolbar">
-                <span>Spring 2027</span>
-                <div>
-                  <span className="schedule-dot" /> {chosen.length} courses{" "}
-                  <span className="divider">/</span> {credits} credits
-                </div>
-              </div>
-              <div className="calendar-scroll">
-                <div className="calendar">
-                  <div className="calendar-heading">
-                    <span />
-                    {["MON", "TUE", "WED", "THU", "FRI"].map((d) => (
-                      <span key={d}>{d}</span>
+                <div className="search-row">
+                  <label>
+                    <Search size={16} />
+                    <input
+                      aria-label="Search courses"
+                      placeholder="Search course code or title"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                    />
+                  </label>
+                  <select
+                    aria-label="Course category"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                  >
+                    {["All", "Core", "Major", "Elective"].map((c) => (
+                      <option key={c}>{c}</option>
                     ))}
-                  </div>
-                  <div className="calendar-body">
-                    <div className="hours">
-                      {[9, 10, 11, 12, 13, 14, 15, 16].map((h) => (
-                        <span key={h}>
-                          {h > 12 ? h - 12 : h}
-                          <small>{h < 12 ? "AM" : "PM"}</small>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="day-columns">
-                      {[0, 1, 2, 3, 4].map((day) => (
-                        <div className="day-column" key={day}>
-                          {chosen
-                            .filter((c) => c.days.includes(day))
-                            .map((c) => (
-                              <button
-                                title={`${c.title} · ${c.time}`}
-                                onClick={() => {
-                                  setQuery(c.id);
-                                  setView("My schedule");
-                                }}
-                                key={c.id}
-                                className={`calendar-event ${c.color}`}
-                                style={{
-                                  top: `${(c.hour - 9) * 44}px`,
-                                  height: `${(c.endHour - c.hour) * 44}px`,
-                                }}
-                              >
-                                <strong>{c.code.replace(" ", "\n")}</strong>
-                                <span>
-                                  {c.startLabel}
-                                </span>
-                              </button>
-                            ))}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  </select>
                 </div>
-              </div>
-              <div className="schedule-summary">
-                <span>
-                  <Check size={14} />{" "}
-                  {hasConflicts ? "Some sections overlap" : chosen.length
-                    ? "Conflict-free sample schedule"
-                    : "Your week is a blank canvas"}
-                </span>
-                <button onClick={() => setView("My schedule")}>
-                  Full schedule
-                  <ArrowUpRight size={13} />
-                </button>
-              </div>
-              <button className="generate-another" onClick={generate} disabled={catalogStatus !== "ready"}>
-                <Sparkles size={15}/>Try another combination
-              </button>
-            </section>
-          </div>
-          <div className="bottom-tip"><span className="tip-icon"><Sparkles size={17}/></span><p><strong>Your future self says thanks.</strong> A balanced schedule leaves room for everything else.</p><span>GO BULLS.</span></div><footer>Built for Bulls. Designed around you.<span>Frontend prototype · Nothing is submitted to USF.</span></footer>
+                {!visibleCourses.length && (
+                  <p className="notice">No courses match this search.</p>
+                )}
+                {visibleCourses.map((c) => (
+                  <div
+                    className={
+                      "course-row " +
+                      (plan.completed.includes(c.code) ? "done" : "")
+                    }
+                    key={c.code}
+                  >
+                    <div>
+                      <small>
+                        {c.category} ·{" "}
+                        {c.semester
+                          ? "Sem " + c.semester
+                          : "Imported · estimated credits"}{" "}
+                        · {c.credits} cr
+                      </small>
+                      <h3>
+                        <button onClick={() => setModal(c.code)}>
+                          {c.code} <span>{c.title}</span>
+                        </button>
+                      </h3>
+                    </div>
+                    <div className="course-controls">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={plan.completed.includes(c.code)}
+                          onChange={() => complete(c.code)}
+                        />
+                        Completed
+                      </label>
+                      <label>
+                        <input
+                          type="checkbox"
+                          disabled={plan.completed.includes(c.code)}
+                          checked={plan.planned.includes(c.code)}
+                          onChange={() =>
+                            update({ planned: toggle(plan.planned, c.code) })
+                          }
+                        />
+                        Plan this term
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </section>
+            </>
+          )}
+          {view === "Registration cart" && (
+            <RegistrationCart
+              sections={sections}
+              credits={credits}
+              registered={plan.registered}
+              toggle={(id) =>
+                update({ registered: toggle(plan.registered, id) })
+              }
+              notify={setToast}
+            />
+          )}
         </div>
       </main>
-      <div className="plan-bar">
-        <div className="plan-bar-icon">
-          <CalendarDays size={21} />
+      <footer>
+        <div className="footer-icon">
+          <ShoppingBag size={19} />
         </div>
         <div>
-          <strong>Spring 2027 plan</strong>
-          <span>
-            {chosen.length} courses <b>·</b> {credits} credits <b>·</b>{" "}
-            {saved ? "Saved on this device" : "Unsaved changes"}
-          </span>
+          <strong>Registration cart</strong>
+          <small>
+            {sections.length} courses · {credits} credits
+          </small>
         </div>
-        <div className="plan-bar-actions">
-          <button className="text-button save-button" onClick={save} disabled={catalogStatus !== "ready"}>
-            {saved ? <Check size={16} /> : <Bookmark size={16} />}{" "}
-            {saved ? "Saved" : "Save plan"}
+        <span className="footer-spacer" />
+        <button
+          className="primary"
+          onClick={() =>
+            go(
+              view === "Registration cart"
+                ? "Weekly schedule"
+                : "Registration cart",
+            )
+          }
+        >
+          {view === "Registration cart" ? "View schedule" : "Review cart"}
+          <ArrowRight size={16} />
+        </button>
+      </footer>
+      {modal === "Major" && (
+        <Modal title="Choose your major" close={() => setModal("")}>
+          <p>2026–2027 undergraduate catalog</p>
+          {programs.map((p) => (
+            <button
+              className="major-row"
+              key={p.name}
+              onClick={() => major(p.name)}
+            >
+              <GraduationCap size={18} />
+              {p.name}
+              {p.name === state.major && <Check size={16} />}
+            </button>
+          ))}
+        </Modal>
+      )}
+      {modal === "DegreeWorks audit" && (
+        <Modal title="Import DegreeWorks audit" close={() => setModal("")}>
+          <AuditImport
+            major={state.major}
+            onApply={(audit) => {
+              update({ audit });
+              setModal("");
+              setToast("Remaining requirements saved");
+            }}
+          />
+        </Modal>
+      )}
+      {modal === "Remove saved audit" && (
+        <Modal title="Remove saved audit?" close={() => setModal("")}>
+          <p>
+            Remove the saved requirement list for {state.major}. Courses you
+            planned separately stay in your semester.
+          </p>
+          <button
+            className="pill"
+            onClick={() => {
+              update({ audit: [] });
+              setModal("");
+            }}
+          >
+            Remove audit
           </button>
+        </Modal>
+      )}
+      {modal === "Paste from Catalog" && (
+        <Modal title={modal} close={() => setModal("")}>
+          <p>
+            Paste text from the catalog, DegreeWorks, or an advising email. New
+            courses use sample sections and estimated credits.
+          </p>
+          <textarea
+            autoFocus
+            value={paste}
+            onChange={(e) => setPaste(e.target.value)}
+            placeholder="COP 4530, CDA3103, CHM 2045L…"
+            aria-label="Catalog text"
+          />
+          <p>
+            {fresh.length} new · {parsed.length - fresh.length} already in plan
+          </p>
+          <div className="tags">
+            {fresh.map((c) => (
+              <code key={c}>{c}</code>
+            ))}
+          </div>
           <button
             className="primary"
-            disabled={!chosen.length}
-            onClick={() => setModal("registration")}
+            disabled={!fresh.length}
+            onClick={importCourses}
           >
-            Review my plan
-            <ChevronRight size={16} />
+            Import courses <Plus size={15} />
           </button>
-        </div>
-      </div>
+        </Modal>
+      )}
+      {selected && (
+        <Modal
+          title={selected.course.code + " · Sections"}
+          close={() => setModal("")}
+        >
+          <p>
+            {selected.course.title} · {selected.course.credits} credits
+          </p>
+          <div className="actions">
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href={courseLinks(selected.course.code).catalog}
+            >
+              USF course details ↗
+            </a>
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href={courseLinks(selected.course.code).coursicle}
+            >
+              Coursicle ↗
+            </a>
+          </div>
+          {plan.pins[selected.course.code] &&
+            !selected.sections.some(
+              (s) => s.crn === plan.pins[selected.course.code],
+            ) && (
+              <button
+                className="pill"
+                onClick={() => {
+                  const pins = { ...plan.pins };
+                  delete pins[selected.course.code];
+                  update({ pins });
+                }}
+              >
+                Clear unavailable pin
+              </button>
+            )}
+          {!selected.sections.length && <p>No sections in the current feed.</p>}
+          {selected.sections.map((s) => {
+            const pinned = plan.pins[s.course] === s.crn;
+            const blocked = activePins.some(
+              (o) =>
+                o.course.code !== s.course &&
+                o.sections.some(
+                  (other) =>
+                    other.crn === plan.pins[o.course.code] &&
+                    conflicts(other, s),
+                ),
+            );
+            return (
+              <article className="section-card" key={s.crn}>
+                <div className="panel-head">
+                  <b>
+                    Section {s.number} · CRN {s.crn}
+                  </b>
+                  <span className={"seat " + s.seat}>{s.seat}</span>
+                </div>
+                <h3>{s.professor}</h3>
+                <small>
+                  {meeting(s)} {s.sample ? "· Sample section" : ""}
+                </small>
+                <p>
+                  RMP {s.rmp.toFixed(1)}/5 · Difficulty {s.difficulty}/5 ·{" "}
+                  {s.again}% would take again · {s.reviews} reviews
+                </p>
+                <p>Coursicle {s.coursicle.toFixed(1)}/5</p>
+                <div className="actions">
+                  <a
+                    href={
+                      "https://www.ratemyprofessors.com/search/professors/1262?q=" +
+                      encodeURIComponent(s.professor)
+                    }
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Verify RMP ↗
+                  </a>
+                  <button
+                    className="pill"
+                    disabled={
+                      !pinned &&
+                      (plan.completed.includes(s.course) ||
+                        blocked ||
+                        (plan.openOnly && s.seat !== "Open"))
+                    }
+                    onClick={() => pin(s)}
+                  >
+                    <Pin size={13} />
+                    {pinned
+                      ? "Unpin section"
+                      : blocked
+                        ? "Conflicts with pin"
+                        : "Pin section"}
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </Modal>
+      )}
       {toast && (
         <div className="toast" role="status">
-          <Check size={17} />
+          <CircleCheck size={16} />
           {toast}
-        </div>
-      )}
-      {modal && (
-        <div className="modal-backdrop" onClick={() => setModal(null)}>
-          <section
-            className="modal"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="modal-close"
-              aria-label="Close dialog"
-              autoFocus
-              onClick={() => setModal(null)}
-            >
-              <X size={20} />
-            </button>
-            {modal === "preferences" ? (
-              <>
-                <span className="eyebrow">MAKE IT YOURS</span>
-                <h2 id="modal-title">Your semester, your rules.</h2>
-                <p>Choose preferences for the sample schedule builder.</p>
-                <label className="preference-row">
-                  <span>
-                    <strong>Keep Fridays free</strong>
-                    <small>A little more room for the weekend.</small>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={noFriday}
-                    onChange={(e) => setNoFriday(e.target.checked)}
-                  />
-                </label>
-                <label className="preference-row">
-                  <span>
-                    <strong>Start at 10 AM or later</strong>
-                    <small>
-                      Exclude sections that start before 10 AM.
-                    </small>
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={lateStart}
-                    onChange={(e) => setLateStart(e.target.checked)}
-                  />
-                </label>
-                <label className="credit-select">
-                  Target credit load
-                  <select
-                    value={target}
-                    onChange={(e) => setTarget(Number(e.target.value))}
-                  >
-                    <option value={9}>9 credits</option>
-                    <option value={12}>12 credits</option>
-                    <option value={15}>15 credits</option>
-                  </select>
-                </label>
-                <button
-                  className="primary modal-primary"
-                  disabled={catalogStatus !== "ready"}
-                  onClick={() => {
-                    generate();
-                    setModal(null);
-                  }}
-                >
-                  <Sparkles size={16}/>Apply &amp; build schedule
-                </button>
-              </>
-            ) : (
-              <>
-                <span className="eyebrow">YOUR NEXT CHAPTER</span>
-                <h2 id="modal-title">Looking like a good semester.</h2>
-                <p>
-                  {credits} credits · {chosen.length} courses · Spring 2027
-                </p>
-                <div className="review-courses">
-                  {chosen.map((c) => (
-                    <div key={c.id}>
-                      <span>
-                        <strong>{c.id}</strong>
-                        <small>{c.title}</small>
-                      </span>
-                      <button
-                        aria-label={`Remove ${c.id}`}
-                        onClick={() => toggle(c)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <div className="review-warning">
-                  <ShieldCheck size={20} />
-                  <p>
-                    This is a sample plan. Section times and seat counts are illustrative. No enrollment is performed. Confirm actual
-                    courses and eligibility in USF Student Self-Service.
-                  </p>
-                </div>
-                <button
-                  className="primary modal-primary"
-                  disabled={!chosen.length}
-                  onClick={exportPlan}
-                >
-                  <Download size={16} />
-                  Download sample plan
-                </button>
-                <a
-                  className="registration-link"
-                  href="https://www.usf.edu/registrar/register/index.aspx"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  USF registration resources <ArrowUpRight size={15} />
-                </a>
-              </>
-            )}
-          </section>
         </div>
       )}
     </div>
   );
 }
-createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-);
+createRoot(document.getElementById("root")!).render(<App />);
