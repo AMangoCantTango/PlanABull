@@ -4,7 +4,7 @@ A USF registration planner built with React, TypeScript, and Vite. Run `npm inst
 
 ## Curriculum
 
-The bundled 2026–2027 snapshot covers Computer Science, Cybersecurity, Information Technology, and Computer Science and Engineering. The planner lists the named courses from USF's four-year fall-start plans. Semester numbers include summer terms. Each major links to its curriculum and full plan, including general education and elective slots without an assigned course code. The planner's Core, Major, and Elective labels are broad planning categories. Course selection does not evaluate degree eligibility or prerequisite completion.
+The major picker uses a bundled USF undergraduate catalog. Each major opens its own course list, schedule, and saved audit. Semester numbers and credits come from readable named course rows in the published four-year sequence when available. Other curriculum options are listed without a semester and use estimated credits. Consult the linked curriculum for prerequisites, alternatives, and variable credit amounts. Refresh the additional major snapshots using `python frontend/scripts/refresh-majors.py` from the repository root with PyMuPDF installed.
 
 To refresh the snapshot, run `node scripts/refresh-catalog.mjs` with Poppler's pdftotext on PATH, or set PDFTOTEXT to its executable. The script reads the public USF catalog widget, the four-year plans linked from each curriculum, and official course-credit fields.
 

@@ -96,6 +96,7 @@ function App() {
   const [state, setState] = useState(loadPlanState),
     [view, setView] = useState("Overview"),
     [modal, setModal] = useState(""),
+    [majorQuery, setMajorQuery] = useState(""),
     [query, setQuery] = useState(""),
     [filter, setFilter] = useState("All"),
     [paste, setPaste] = useState(""),
@@ -129,11 +130,11 @@ function App() {
       courses.map((course, i) => ({
         course,
         sections:
-          feed && course.semester
+          feed && (course.semester || program.courses.some(c => c.code === course.code))
             ? feed.filter((s) => s.course === course.code)
             : sampleSections(course, i),
       })),
-    [courses, feed],
+    [courses, feed, program],
   );
   const planned = useMemo(
     () => offerings.filter((o) => plan.planned.includes(o.course.code)),
@@ -186,6 +187,16 @@ function App() {
     setModal("");
     window.scrollTo(0, 0);
   }
+  function chooseMajor() {
+    setMajorQuery("");
+    setModal("Major");
+  }
+  const searchMajor = majorQuery.trim().toLowerCase();
+  const matchingPrograms = programs.filter(({ name }) => {
+    const label = majorLabel(name).toLowerCase();
+    const initials = label.split(/\s+/).filter(word => word !== "and").map(word => word[0]).join("");
+    return name.toLowerCase().includes(searchMajor) || initials === searchMajor;
+  });
   function major(name: string) {
     setState((prev) => ({
       major: name,
@@ -193,7 +204,7 @@ function App() {
     }));
     setQuery("");
     setFilter("All");
-    setModal("");
+    go("Degree plan");
   }
   useEffect(() => {
     setSaved(savePlanState(state));
@@ -347,7 +358,7 @@ function App() {
         </nav>
         <div className="side-bottom">
           <div className="nav-label">ACADEMIC PROFILE</div>
-          <button className="profile" onClick={() => setModal("Major")}>
+          <button className="profile" onClick={chooseMajor}>
             <span className="profile-icon">
               <GraduationCap size={19} />
             </span>
@@ -401,6 +412,7 @@ function App() {
                   <button className="primary" onClick={() => go("Degree plan")}>
                     Open degree plan <ArrowUpRight size={15} />
                   </button>
+                  <button className="pill" onClick={chooseMajor}>Find my major</button>
                 </div>
               </section>
               <div className="stats">
@@ -485,13 +497,14 @@ function App() {
                     </div>
                     <h2>{state.major}</h2>
                   </div>
-                  <button className="pill" onClick={() => setModal("Major")}>
+                  <button className="pill" onClick={chooseMajor}>
                     Change major
                   </button>
                 </div>
                 <p>
-                  Named courses from the four-year plan. See the official
-                  curriculum for elective choices and prerequisites.
+                  {program.courses.length
+                    ? "Browse named courses and elective options. Check the official curriculum for prerequisites and choice rules."
+                    : "USF does not list individual courses in this catalog entry. Use the curriculum or import your degree audit to add courses."}
                 </p>
                 <div className="actions">
                   <a
@@ -502,14 +515,14 @@ function App() {
                   >
                     USF curriculum <ExternalLink size={13} />
                   </a>
-                  <a
+                  {program.sequence && <a
                     className="text-link"
                     target="_blank"
                     rel="noreferrer"
                     href={program.sequence}
                   >
                     Four-year plan <ExternalLink size={13} />
-                  </a>
+                  </a>}
                 </div>
                 <div className="summary">
                   {doneCredits} credits completed ·{" "}
@@ -654,7 +667,7 @@ function App() {
                         {c.category} ·{" "}
                         {c.semester
                           ? "Sem " + c.semester
-                          : "Imported · estimated credits"}{" "}
+                          : "Unscheduled · estimated credits"}{" "}
                         · {c.credits} cr
                       </small>
                       <h3>
@@ -730,7 +743,19 @@ function App() {
       {modal === "Major" && (
         <Modal title="Choose your major" close={() => setModal("")}>
           <p>2026–2027 undergraduate catalog</p>
-          {programs.map((p) => (
+          <form className="search-row" onSubmit={event => {
+            event.preventDefault();
+            const exact = matchingPrograms.find(p => majorLabel(p.name).toLowerCase() === searchMajor);
+            if (exact) major(exact.name);
+            else if (matchingPrograms.length === 1) major(matchingPrograms[0].name);
+          }}>
+            <input aria-label="Search majors" autoFocus placeholder="Type your major" value={majorQuery}
+              onChange={event => setMajorQuery(event.target.value)} />
+          </form>
+          {!matchingPrograms.length && <p>No matching plan in the planner catalog.{" "}
+            <a href="https://www.usf.edu/undergrad/advisors/plans-of-study.aspx" target="_blank" rel="noreferrer">Find your plan at USF</a>
+          </p>}
+          {matchingPrograms.map((p) => (
             <button
               className="major-row"
               key={p.name}

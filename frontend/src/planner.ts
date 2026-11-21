@@ -1,3 +1,4 @@
+import additionalPrograms from "./majorDirectory.json";
 import catalog from "./catalog.json";
 
 export interface Course {
@@ -7,7 +8,7 @@ export interface Course {
   category: string;
   semester: number;
 }
-export const programs = catalog;
+export const programs: typeof catalog = [...catalog, ...additionalPrograms];
 export const presets = [
   "Balanced",
   "Highest Professor Rating",
