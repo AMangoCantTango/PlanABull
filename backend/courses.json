@@ -1,0 +1,39 @@
+[
+  {
+    "code": "COP 3515",
+    "name": "Programming Concepts",
+    "credits": 3,
+    "prerequisites": [],
+    "sections": [
+      {"id": "COP3515-001", "days": ["M", "W"], "start": "10:00", "end": "11:15", "seats_available": 12},
+      {"id": "COP3515-002", "days": ["T", "R"], "start": "14:00", "end": "15:15", "seats_available": 8}
+    ]
+  },
+  {
+    "code": "STA 2023",
+    "name": "Introductory Statistics",
+    "credits": 3,
+    "prerequisites": [],
+    "sections": [
+      {"id": "STA2023-001", "days": ["M", "W"], "start": "11:30", "end": "12:45", "seats_available": 15}
+    ]
+  },
+  {
+    "code": "CDA 3103",
+    "name": "Computer Organization",
+    "credits": 3,
+    "prerequisites": ["COP 3515"],
+    "sections": [
+      {"id": "CDA3103-001", "days": ["T", "R"], "start": "09:30", "end": "10:45", "seats_available": 10}
+    ]
+  },
+  {
+    "code": "ENC 3246",
+    "name": "Communication for Engineers",
+    "credits": 3,
+    "prerequisites": [],
+    "sections": [
+      {"id": "ENC3246-001", "days": ["M", "W"], "start": "13:00", "end": "14:15", "seats_available": 20}
+    ]
+  }
+]
