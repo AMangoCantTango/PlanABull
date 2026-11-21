@@ -16,6 +16,6 @@ app.add_middleware(
 def health():
     return {
         "status": "running",
-        "app": "BullPlanner+",
+        "app": "PlanABull",
         "message": "Backend is working!"
     }
